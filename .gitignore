@@ -1,0 +1,22 @@
+# Xcode
+xcuserdata/
+*.xcuserstate
+DerivedData/
+build/
+.swiftpm/
+.build/
+
+# macOS
+.DS_Store
+
+# Secrets: never commit
+*.xcconfig.local
+Secrets.xcconfig
+.env
+.env.*
+
+
+# The maintainer's own notes
+CLAUDE.local.md
+SPEC.md
+PLAN.md

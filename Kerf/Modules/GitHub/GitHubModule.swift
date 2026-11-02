@@ -1,0 +1,181 @@
+import AppKit
+import KerfKit
+import SwiftUI
+
+/// Pull requests, a repo's branches and merges, CI, issues and files, through the GitHub CLI you
+/// is signed in to.
+@Observable
+final class GitHubModule {
+    static let shared = GitHubModule()
+
+    enum Tab: String, CaseIterable, Identifiable {
+        case pulls, branches, ci, issues, files
+        var id: String { rawValue }
+
+        var title: LocalizedStringResource {
+            switch self {
+            case .pulls: "PRs"
+            case .branches: "Branches"
+            case .ci: "CI"
+            case .issues: "Issues"
+            case .files: "Files"
+            }
+        }
+    }
+
+    var tab = Tab.pulls
+    private(set) var pulls: [GitHub.Item] = []
+    private(set) var issues: [GitHub.Item] = []
+    private(set) var runs: [GitHub.Run] = []
+    private(set) var repos: [GitHub.Repo] = []
+    private(set) var tree: [GitHub.TreeEntry] = []
+    /// The chosen repo's recent commits over its branches, in lanes.
+    private(set) var graph: [GitHub.GraphRow] = []
+    @ObservationIgnored private var graphRepo: String?
+    private(set) var repo: GitHub.Repo?
+    var folder = ""
+    private(set) var isLoading = false
+    private(set) var problem: String?
+    @ObservationIgnored private var loadedAt = Date.distantPast
+
+    nonisolated static var executable: String? {
+        ["/opt/homebrew/bin/gh", "/usr/local/bin/gh"].first { FileManager.default.isExecutableFile(atPath: $0) }
+    }
+
+    /// Runs `gh` off the main thread.
+    nonisolated static func gh(_ arguments: [String]) async -> Data? {
+        guard let executable else { return nil }
+        return await Task.detached(priority: .utility) {
+            let process = Process()
+            process.executableURL = URL(fileURLWithPath: executable)
+            process.arguments = arguments
+            let output = Pipe()
+            process.standardOutput = output
+            process.standardError = FileHandle.nullDevice
+            guard (try? process.run()) != nil else { return nil }
+            let data = output.fileHandleForReading.readDataToEndOfFile()
+            process.waitUntilExit()
+            return process.terminationStatus == 0 ? data : nil
+        }.value
+    }
+
+    /// At most every two minutes, when the page opens.
+    func refreshIfStale() {
+        guard Date().timeIntervalSince(loadedAt) > 120, !isLoading else { return }
+        Task { await refresh() }
+    }
+
+    func refresh() async {
+        guard Self.executable != nil else {
+            problem = String(localized: "Install the GitHub CLI (gh) and sign in.")
+            return
+        }
+        isLoading = true
+        async let pulls = Self.gh(["search", "prs", "--involves", "@me", "--state", "open", "--json", "number,title,repository,url,updatedAt,isDraft", "--limit", "20"])
+        async let issues = Self.gh(["search", "issues", "--assignee", "@me", "--state", "open", "--json", "number,title,repository,url,updatedAt", "--limit", "8"])
+        async let repos = Self.gh(["repo", "list", "--limit", "100", "--json", "nameWithOwner,pushedAt,isPrivate"])
+        let (p, i, r) = await (pulls, issues, repos)
+        guard let r else {
+            problem = String(localized: "gh isn't signed in. Run gh auth login in Terminal.")
+            isLoading = false
+            return
+        }
+        problem = nil
+        self.pulls = p.flatMap { GitHub.decode([GitHub.Item].self, from: $0) } ?? []
+        self.issues = i.flatMap { GitHub.decode([GitHub.Item].self, from: $0) } ?? []
+        self.repos = (GitHub.decode([GitHub.Repo].self, from: r) ?? []).sorted { ($0.pushedAt ?? .distantPast) > ($1.pushedAt ?? .distantPast) }
+        if repo == nil { repo = self.repos.first }
+        // CI of the four repos pushed to last.
+        var runs: [GitHub.Run] = []
+        await withTaskGroup(of: [GitHub.Run].self) { group in
+            for repo in self.repos.prefix(4) {
+                group.addTask {
+                    guard let data = await Self.gh(["run", "list", "--repo", repo.nameWithOwner, "--limit", "2", "--json",
+                                                    "status,conclusion,name,headBranch,createdAt,url,displayTitle"]) else { return [] }
+                    return (GitHub.decode([GitHub.Run].self, from: data) ?? []).map { var run = $0; run.repo = repo.name; return run }
+                }
+            }
+            for await found in group { runs += found }
+        }
+        self.runs = runs.sorted { ($0.createdAt ?? .distantPast) > ($1.createdAt ?? .distantPast) }
+        loadedAt = .now
+        isLoading = false
+        if tab == .files { await loadTree() }
+        if tab == .branches { await loadGraph() }
+        IslandManager.current?.refit()
+    }
+
+    /// The tab's own data, the first time it shows.
+    func show(_ tab: Tab) {
+        self.tab = tab
+        switch tab {
+        case .files: Task { await loadTree() }
+        case .branches: Task { await loadGraph() }
+        default: break
+        }
+    }
+
+    func choose(_ repo: GitHub.Repo) {
+        self.repo = repo
+        folder = ""
+        tree = []
+        graph = []
+        graphRepo = nil
+        show(tab)
+    }
+
+    func loadGraph() async {
+        guard let repo, graphRepo != repo.nameWithOwner else { return }
+        let parts = repo.nameWithOwner.split(separator: "/").map(String.init)
+        guard parts.count == 2, let data = await Self.gh(["api", "graphql", "-f", "query=\(GitHub.branchQuery)",
+                                                           "-F", "owner=\(parts[0])", "-F", "name=\(parts[1])"]) else { return }
+        // Another repo may have been chosen meanwhile.
+        guard self.repo == repo else { return }
+        graph = GitHub.graph(GitHub.commits(fromBranchQuery: data))
+        graphRepo = repo.nameWithOwner
+    }
+
+    func open(_ commit: GitHub.Commit) {
+        guard let repo else { return }
+        open("https://github.com/\(repo.nameWithOwner)/commit/\(commit.id)")
+    }
+
+    func loadTree() async {
+        guard let repo, tree.isEmpty else { return }
+        if let data = await Self.gh(["api", "repos/\(repo.nameWithOwner)/git/trees/HEAD?recursive=1"]) {
+            tree = GitHub.tree(from: data)
+            IslandManager.current?.refit()
+        }
+    }
+
+    /// A local clone in ~/GitHub opens the file itself; otherwise github.com.
+    func open(_ entry: GitHub.TreeEntry) {
+        if entry.isFolder {
+            folder = entry.path
+            IslandManager.current?.refit()
+            return
+        }
+        guard let repo else { return }
+        let local = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("GitHub/\(repo.name)/\(entry.path)")
+        if FileManager.default.fileExists(atPath: local.path) {
+            NSWorkspace.shared.activateFileViewerSelecting([local])
+        } else if let url = URL(string: "https://github.com/\(repo.nameWithOwner)/blob/HEAD/\(entry.path)") {
+            NSWorkspace.shared.open(url)
+        }
+    }
+
+    func up() {
+        folder = (folder as NSString).deletingLastPathComponent
+        IslandManager.current?.refit()
+    }
+
+    /// Lab only.
+    func preview(pulls: [GitHub.Item]) {
+        self.pulls = pulls
+        loadedAt = .now
+    }
+
+    func open(_ link: String) {
+        if let url = URL(string: link) { NSWorkspace.shared.open(url) }
+    }
+}

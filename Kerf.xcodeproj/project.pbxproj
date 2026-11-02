@@ -1,0 +1,337 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 90;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		B00000000000000000000170 /* KerfKit in Frameworks */ = {isa = PBXBuildFile; productRef = B00000000000000000000031 /* KerfKit */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		B00000000000000000000120 /* Kerf.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Kerf.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		B00000000000000000000017 /* Exceptions for "Kerf" folder in "Kerf" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = B00000000000000000000100 /* Kerf */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		B00000000000000000000010 /* Kerf */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				B00000000000000000000017 /* Exceptions for "Kerf" folder in "Kerf" target */,
+			);
+			path = Kerf;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		B00000000000000000000130 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+				B00000000000000000000170 /* KerfKit in Frameworks */,
+			);
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		B00000000000000000000001 = {
+			isa = PBXGroup;
+			children = (
+				B00000000000000000000010 /* Kerf */,
+				B00000000000000000000020 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		B00000000000000000000020 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				B00000000000000000000120 /* Kerf.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		B00000000000000000000100 /* Kerf */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B00000000000000000000110 /* Build configuration list for PBXNativeTarget "Kerf" */;
+			buildPhases = (
+				B00000000000000000000140 /* Sources */,
+				B00000000000000000000130 /* Frameworks */,
+				B00000000000000000000141 /* Resources */,
+				B00000000000000000000142 /* Build MediaRemote adapter */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				B00000000000000000000010 /* Kerf */,
+			);
+			name = Kerf;
+			packageProductDependencies = (
+				B00000000000000000000031 /* KerfKit */,
+			);
+			productName = Kerf;
+			productReference = B00000000000000000000120 /* Kerf.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		B00000000000000000000000 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2700;
+				LastUpgradeCheck = 2700;
+				TargetAttributes = {
+					B00000000000000000000100 = {
+						CreatedOnToolsVersion = 27.1;
+					};
+				};
+			};
+			buildConfigurationList = B00000000000000000000011 /* Build configuration list for PBXProject "Kerf" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				nl,
+				Base,
+			);
+			mainGroup = B00000000000000000000001;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				B00000000000000000000030 /* XCLocalSwiftPackageReference "KerfKit" */,
+			);
+			preferredProjectObjectVersion = 90;
+			productRefGroup = B00000000000000000000020 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				B00000000000000000000100 /* Kerf */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		B00000000000000000000141 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+			);
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		B00000000000000000000142 /* Build MediaRemote adapter */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Build MediaRemote adapter";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"$SRCROOT/scripts/build-adapter.sh\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		B00000000000000000000140 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+			);
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		B00000000000000000000801 /* Debug configuration for PBXProject "Kerf" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Manual;
+				DEVELOPMENT_TEAM = VS85X8U52P;
+				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		B00000000000000000000802 /* Release configuration for PBXProject "Kerf" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Manual;
+				DEVELOPMENT_TEAM = VS85X8U52P;
+				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+		B00000000000000000000111 /* Debug configuration for PBXNativeTarget "Kerf" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				COMBINE_HIDPI_IMAGES = YES;
+				CODE_SIGN_ENTITLEMENTS = Config/Kerf.entitlements;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_HARDENED_RUNTIME = NO;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Kerf/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Kerf;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_KEY_LSUIElement = YES;
+				INFOPLIST_KEY_NSAppleEventsUsageDescription = "Kerf controls music apps and reads render progress from DaVinci Resolve.";
+				INFOPLIST_KEY_NSAudioCaptureUsageDescription = "Kerf moves the waveform in the notch with the music. It only measures loudness; nothing is recorded.";
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Kerf shows your AirPods and their battery when they connect.";
+				INFOPLIST_KEY_NSDownloadsFolderUsageDescription = "Kerf shows the progress of your downloads in the notch.";
+				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "Kerf shows your next event and its join link in the notch.";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Kerf shows your camera as a mirror in the notch.";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "© 2026 Paul Boerma";
+				INFOPLIST_KEY_NSLocationUsageDescription = "Kerf shows the weather where you are.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Kerf turns what you say into a question for Claude.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Kerf turns what you say into a question for Claude.";
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks";
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = nl.paulboerma.kerf;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		B00000000000000000000112 /* Release configuration for PBXNativeTarget "Kerf" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				COMBINE_HIDPI_IMAGES = YES;
+				CODE_SIGN_ENTITLEMENTS = Config/Kerf.entitlements;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Kerf/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Kerf;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_KEY_LSUIElement = YES;
+				INFOPLIST_KEY_NSAppleEventsUsageDescription = "Kerf controls music apps and reads render progress from DaVinci Resolve.";
+				INFOPLIST_KEY_NSAudioCaptureUsageDescription = "Kerf moves the waveform in the notch with the music. It only measures loudness; nothing is recorded.";
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Kerf shows your AirPods and their battery when they connect.";
+				INFOPLIST_KEY_NSDownloadsFolderUsageDescription = "Kerf shows the progress of your downloads in the notch.";
+				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "Kerf shows your next event and its join link in the notch.";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Kerf shows your camera as a mirror in the notch.";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "© 2026 Paul Boerma";
+				INFOPLIST_KEY_NSLocationUsageDescription = "Kerf shows the weather where you are.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Kerf turns what you say into a question for Claude.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Kerf turns what you say into a question for Claude.";
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks";
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = nl.paulboerma.kerf;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		B00000000000000000000011 /* Build configuration list for PBXProject "Kerf" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B00000000000000000000801 /* Debug configuration for PBXProject "Kerf" */,
+				B00000000000000000000802 /* Release configuration for PBXProject "Kerf" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		B00000000000000000000110 /* Build configuration list for PBXNativeTarget "Kerf" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B00000000000000000000111 /* Debug configuration for PBXNativeTarget "Kerf" */,
+				B00000000000000000000112 /* Release configuration for PBXNativeTarget "Kerf" */,
+			);
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		B00000000000000000000030 /* XCLocalSwiftPackageReference "KerfKit" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = KerfKit;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		B00000000000000000000031 /* KerfKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = KerfKit;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = B00000000000000000000000 /* Project object */;
+}
