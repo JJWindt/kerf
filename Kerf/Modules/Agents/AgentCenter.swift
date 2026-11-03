@@ -169,7 +169,6 @@ final class AgentCenter {
             session.unread = true
             session.needsInput = false
             session.lastMessage = last.map { String($0.prefix(300)) }
-            if Self.showsDone { Sounds.play(.done) }
         case .sessionEnd:
             connection?.reply(nil)
             sessions.removeAll { $0.id == sessionID }
@@ -271,16 +270,17 @@ final class AgentCenter {
     }
 }
 
-/// Soft system sounds, and only if you want sounds.
+/// Soft system sounds, and only if you want sounds. Only a question makes one: a finished
+/// thread shows its tick without a sound.
 enum Sounds {
     enum Kind {
-        case question, done
+        case question
     }
 
     static func play(_ kind: Kind) {
         guard UserDefaults.standard.bool(forKey: Preferences.playsSounds) else { return }
-        let sound = NSSound(named: kind == .question ? "Tink" : "Pop")
-        sound?.volume = kind == .question ? 0.35 : 0.25
+        let sound = NSSound(named: "Tink")
+        sound?.volume = 0.35
         sound?.play()
     }
 }

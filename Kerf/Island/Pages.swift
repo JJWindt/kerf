@@ -10,7 +10,7 @@ enum IslandPage: String, CaseIterable, Identifiable {
     var symbol: String {
         switch self {
         case .agents: "apple.intelligence"
-        case .ask: "sparkle.magnifyingglass"
+        case .ask: "sparkle"
         }
     }
 
