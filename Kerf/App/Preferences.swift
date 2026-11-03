@@ -12,7 +12,7 @@ enum Preferences {
 
     static func register() {
         UserDefaults.standard.register(defaults: [
-            showOnExternalDisplays: true,
+            showOnExternalDisplays: false,
             hoverOpenDelay: 0.25,
             playsSounds: true,
             closesOnLeave: true,
