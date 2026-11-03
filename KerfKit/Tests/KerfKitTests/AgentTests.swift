@@ -324,3 +324,39 @@ struct RunningThreadTests {
         #expect(RunningThreads.arguments(getpid()).isEmpty == false || CommandLine.arguments.count <= 1)
     }
 }
+
+struct ThreadDetailsTests {
+    @Test func subagentsAndFailures() {
+        #expect(AgentEvent(.object(["hook_event_name": "SubagentStart", "agent_id": "a1", "agent_type": "Explore"])) == .subagentStarted(id: "a1"))
+        #expect(AgentEvent(.object(["hook_event_name": "SubagentStop", "agent_id": "a1"])) == .subagentStopped(id: "a1"))
+        #expect(AgentEvent(.object(["hook_event_name": "StopFailure", "error": "rate_limit", "error_details": "429 Too Many Requests"]))
+            == .stopFailed(error: "rate_limit", details: "429 Too Many Requests"))
+        #expect(AgentEvent(.object(["hook_event_name": "Stop", "background_tasks": .array([])])) == .stop(lastMessage: nil, subagentsRunning: false))
+        #expect(AgentEvent(.object(["hook_event_name": "Stop", "background_tasks": .array([.object(["id": "t1", "type": "subagent"])])]))
+            == .stop(lastMessage: nil, subagentsRunning: true))
+    }
+
+    @Test func links() {
+        #expect(ThreadLink.of(host: "/System/Applications/Utilities/Terminal.app", tty: "/dev/ttys003", project: "kerf", desktopSessionID: nil)
+            == .terminalTab(script: ThreadLink.terminalScript("/dev/ttys003")))
+        // A tty that isn't one never reaches the script.
+        #expect(ThreadLink.of(host: "/Applications/iTerm.app", tty: "/dev/ttys003\" & quit", project: nil, desktopSessionID: nil) == .app)
+        #expect(ThreadLink.of(host: "/Applications/Claude.app", tty: nil, project: "kerf", desktopSessionID: "local_661abf77-b1c8")
+            == .url(URL(string: "claude://code/continue?session=local_661abf77-b1c8")!))
+        #expect(ThreadLink.of(host: "/Applications/Claude.app", tty: nil, project: "kerf", desktopSessionID: nil) == .app)
+        #expect(ThreadLink.of(host: "/Applications/Visual Studio Code.app", tty: nil, project: "kerf", desktopSessionID: nil) == .window(project: "kerf"))
+        #expect(ThreadLink.title("AgentCenter.swift — kerf — Visual Studio Code", names: "kerf"))
+        #expect(!ThreadLink.title("README.md — kerf-upstream — Visual Studio Code", names: "kerf"))
+        #expect(ThreadLink.title("kerf", names: "kerf"))
+    }
+
+    @Test func desktopSessions() throws {
+        let folder = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        let org = folder.appendingPathComponent("account/org")
+        try FileManager.default.createDirectory(at: org, withIntermediateDirectories: true)
+        try Data(#"{"sessionId":"local_661abf77","cliSessionId":"b095e46e"}"#.utf8).write(to: org.appendingPathComponent("local_661abf77.json"))
+        #expect(ThreadLink.desktopSessionID(forCLI: "b095e46e", in: folder) == "local_661abf77")
+        #expect(ThreadLink.desktopSessionID(forCLI: "other", in: folder) == nil)
+        try? FileManager.default.removeItem(at: folder)
+    }
+}

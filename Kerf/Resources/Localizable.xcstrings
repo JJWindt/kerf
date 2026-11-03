@@ -1,6 +1,26 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "%@ · %@" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · %@"
+          }
+        }
+      }
+    },
+    "%lld subagents" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld subagents"
+          }
+        }
+      }
+    },
     "%lld threads are waiting for you" : {
       "localizations" : {
         "nl" : {
@@ -51,12 +71,32 @@
         }
       }
     },
+    "1 subagent" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 subagent"
+          }
+        }
+      }
+    },
     "1.5 seconds" : {
       "localizations" : {
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "1,5 seconde"
+          }
+        }
+      }
+    },
+    "account problem" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "probleem met je account"
           }
         }
       }
@@ -141,12 +181,32 @@
         }
       }
     },
+    "answer too long" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "antwoord te lang"
+          }
+        }
+      }
+    },
     "Any tool or script can use the kerf command:" : {
       "localizations" : {
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Elk programma of script kan het kerf-commando gebruiken:"
+          }
+        }
+      }
+    },
+    "API error" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "API-fout"
           }
         }
       }
@@ -211,6 +271,36 @@
         }
       }
     },
+    "Changes requested" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wijzigingen gevraagd"
+          }
+        }
+      }
+    },
+    "Checks failed" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checks mislukt"
+          }
+        }
+      }
+    },
+    "Checks running" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checks lopen"
+          }
+        }
+      }
+    },
     "Claude Code isn't installed. Kerf uses it to ask Claude with your subscription." : {
       "localizations" : {
         "nl" : {
@@ -227,6 +317,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Claude kon geen antwoord geven."
+          }
+        }
+      }
+    },
+    "Claude is overloaded" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude is overbelast"
           }
         }
       }
@@ -571,6 +671,16 @@
         }
       }
     },
+    "rate limit reached" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "limiet bereikt"
+          }
+        }
+      }
+    },
     "Read a file" : {
       "localizations" : {
         "nl" : {
@@ -597,6 +707,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Op het web zoeken"
+          }
+        }
+      }
+    },
+    "server error" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "serverfout"
           }
         }
       }
@@ -631,12 +751,42 @@
         }
       }
     },
+    "sign-in problem" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "probleem met inloggen"
+          }
+        }
+      }
+    },
     "Stop" : {
       "localizations" : {
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Stop"
+          }
+        }
+      }
+    },
+    "Stopped on an error" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gestopt door een fout"
+          }
+        }
+      }
+    },
+    "Stopped: %@" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gestopt: %@"
           }
         }
       }

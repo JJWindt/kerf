@@ -11,6 +11,8 @@ final class PullRequests {
     private(set) var pulls: [GitHub.Item] = []
     private(set) var isLoading = false
     @ObservationIgnored private var loadedAt = Date.distantPast
+    /// Your GitHub login, for the search; asked once.
+    @ObservationIgnored private var login: String?
 
     nonisolated static var executable: String? {
         ["/opt/homebrew/bin/gh", "/usr/local/bin/gh"].first { FileManager.default.isExecutableFile(atPath: $0) }
@@ -41,9 +43,16 @@ final class PullRequests {
 
     func refresh() async {
         isLoading = true
-        let data = await Self.gh(["search", "prs", "--involves", "@me", "--state", "open", "--json",
-                                  "number,title,repository,url,updatedAt,isDraft", "--limit", "20"])
-        pulls = data.flatMap { GitHub.decode([GitHub.Item].self, from: $0) } ?? []
+        if login == nil, let data = await Self.gh(["api", "user", "--jq", ".login"]) {
+            login = String(decoding: data, as: UTF8.self).trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+        if let login, !login.isEmpty {
+            // One GraphQL search: the PRs with their checks and reviews, which `gh search prs` leaves out.
+            let data = await Self.gh(["api", "graphql", "-f", "query=\(GitHub.searchQuery(login: login))"])
+            pulls = data.flatMap(GitHub.pulls(fromSearch:)) ?? []
+        } else {
+            pulls = []
+        }
         loadedAt = .now
         isLoading = false
         IslandManager.current?.refit()

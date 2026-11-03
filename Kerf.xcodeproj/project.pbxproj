@@ -213,6 +213,7 @@
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "© 2026 Paul Boerma";
+				INFOPLIST_KEY_NSAppleEventsUsageDescription = "Kerf selects the Terminal or iTerm tab a thread runs in when you click it.";
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks";
 				MARKETING_VERSION = 0.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = nl.jjwindt.kerf;
@@ -244,6 +245,7 @@
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "© 2026 Paul Boerma";
+				INFOPLIST_KEY_NSAppleEventsUsageDescription = "Kerf selects the Terminal or iTerm tab a thread runs in when you click it.";
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks";
 				MARKETING_VERSION = 0.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = nl.jjwindt.kerf;

@@ -48,7 +48,7 @@ final class Hub {
         var notice: CompactPresentation?
         if let newest = notices.first {
             notice = .agentNotice(agent: newest.agent, hostPath: newest.hostPath, count: notices.count,
-                                  needsInput: notices.contains(where: \.needsInput))
+                                  needsInput: notices.contains(where: \.needsInput), failed: notices.contains { $0.failure != nil })
         }
         let waitingAgent: CompactPresentation? = waiting.first.map { .agent(agent: $0.agent, hostPath: $0.hostPath) }
         let new = banner ?? notice ?? waitingAgent

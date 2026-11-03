@@ -19,7 +19,9 @@ final class AgentCenter {
         var name: String
         var hostPath: String?
         var project: String?
-        var state: State
+        var state: State {
+            didSet { if state != oldValue { stateSince = .now } }
+        }
         var updated: Date
         var lastMessage: String?
         /// The first thing you asked in this thread.
@@ -32,6 +34,14 @@ final class AgentCenter {
         var foundByScan = false
         /// The agent's own session id.
         var nativeID: String?
+        /// The terminal it runs in, to pick the right tab: `/dev/ttys003`.
+        var tty: String?
+        /// Since when it works, waits or is done.
+        var stateSince = Date.now
+        /// Subagents running for this thread, by their id.
+        var subagents: Set<String> = []
+        /// The turn ended on an API error (`rate_limit`, `overloaded`, …) instead of finishing.
+        var failure: String?
     }
 
     struct Request: Identifiable {
@@ -89,6 +99,8 @@ final class AgentCenter {
                                   project: ProjectName.of(thread.cwd), state: .working, updated: thread.updated, title: thread.title)
             session.foundByScan = true
             session.nativeID = thread.sessionID
+            session.stateSince = thread.updated
+            session.tty = thread.tty
             next.append(session)
         }
         next.sort { $0.updated > $1.updated }
@@ -143,6 +155,7 @@ final class AgentCenter {
         if !payload.sessionID.isEmpty { session.nativeID = payload.sessionID }
         session.project = payload.project ?? session.project
         session.hostPath = envelope.host ?? session.hostPath
+        session.tty = envelope.tty ?? session.tty
         // A thread Kerf joins halfway gets its title from the transcript.
         if isNew, session.title == nil, let transcript = payload.transcriptPath { loadTitle(sessionID, from: transcript) }
 
@@ -182,13 +195,30 @@ final class AgentCenter {
             if session.state == .waiting, !requests.contains(where: { $0.sessionID == sessionID }) {
                 session.state = .working
             }
-        case .stop(let last):
+        case .stop(let last, let subagentsRunning):
             connection?.reply(nil)
             session.state = .idle
             session.unread = true
             session.needsInput = false
+            session.failure = nil
             session.lastMessage = last.map { String($0.prefix(300)) }
+            // Only background subagents outlive the turn.
+            if !subagentsRunning { session.subagents = [] }
             if Self.showsDone, UserDefaults.standard.bool(forKey: Self.soundsDoneKey) { Sounds.play(.done) }
+        case .stopFailed(let error, _):
+            connection?.reply(nil)
+            // Not done: it stopped on an error and waits for you to pick it up. Stays in the notch.
+            session.state = .idle
+            session.unread = true
+            session.needsInput = true
+            session.failure = error
+            session.subagents = []
+        case .subagentStarted(let id):
+            connection?.reply(nil)
+            if !id.isEmpty { session.subagents.insert(id) }
+        case .subagentStopped(let id):
+            connection?.reply(nil)
+            session.subagents.remove(id)
         case .sessionEnd:
             connection?.reply(nil)
             sessions.removeAll { $0.id == sessionID }
@@ -199,6 +229,7 @@ final class AgentCenter {
             session.state = .working
             session.unread = false
             session.needsInput = false
+            session.failure = nil
             if session.title == nil { session.title = prompt.flatMap(ThreadTitle.from) }
         case .sessionStart, .other:
             connection?.reply(nil)
@@ -269,11 +300,41 @@ final class AgentCenter {
         NSWorkspace.shared.openApplication(at: URL(fileURLWithPath: host), configuration: NSWorkspace.OpenConfiguration())
     }
 
-    /// The app the thread runs in: the terminal or editor.
+    /// Where the thread runs: its terminal tab, its desktop session or its editor window, else
+    /// just the app.
     func open(_ session: Session) {
         markRead(session.id)
         guard let host = session.hostPath else { return }
-        NSWorkspace.shared.openApplication(at: URL(fileURLWithPath: host), configuration: NSWorkspace.OpenConfiguration())
+        Task.detached(priority: .userInitiated) {
+            let desktopID = session.nativeID.flatMap {
+                ThreadLink.desktopSessionID(forCLI: $0, in: KerfPaths.claudeDesktopSessions)
+            }
+            let link = ThreadLink.of(host: host, tty: session.tty, project: session.project, desktopSessionID: desktopID)
+            await MainActor.run { Self.follow(link, host: host) }
+        }
+    }
+
+    private static func follow(_ link: ThreadLink, host: String) {
+        let app = URL(fileURLWithPath: host)
+        switch link {
+        case .terminalTab(let script):
+            // osascript, not NSAppleScript: Terminal may take a moment and the island shouldn't wait.
+            let process = Process()
+            process.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
+            process.arguments = ["-e", script]
+            if (try? process.run()) == nil { openApp(app) }
+        case .url(let url):
+            NSWorkspace.shared.open(url)
+        case .window(let project):
+            openApp(app)
+            WindowRaiser.raise(appAt: host) { ThreadLink.title($0, names: project) }
+        case .app:
+            openApp(app)
+        }
+    }
+
+    private static func openApp(_ app: URL) {
+        NSWorkspace.shared.openApplication(at: app, configuration: NSWorkspace.OpenConfiguration())
     }
 
     private func loadTitle(_ sessionID: String, from path: String) {

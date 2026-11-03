@@ -26,6 +26,10 @@ public enum HookInstaller {
                 // A tool that ran means a waiting thread moved on, also when you answered in the terminal.
                 Hook(event: "PostToolUse", matcher: nil, timeout: 10),
                 Hook(event: "PostToolUseFailure", matcher: nil, timeout: 10),
+                // Subagents per thread, and a turn that ended on an error.
+                Hook(event: "SubagentStart", matcher: nil, timeout: 10),
+                Hook(event: "SubagentStop", matcher: nil, timeout: 10),
+                Hook(event: "StopFailure", matcher: nil, timeout: 10),
                 Hook(event: "Notification", matcher: nil, timeout: 10),
                 Hook(event: "Stop", matcher: nil, timeout: 10),
                 Hook(event: "SessionStart", matcher: nil, timeout: 10),

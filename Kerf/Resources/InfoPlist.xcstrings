@@ -18,6 +18,24 @@
         }
       }
     },
+    "NSAppleEventsUsageDescription" : {
+      "comment" : "Privacy - AppleEvents Sending Usage Description",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Kerf selects the Terminal or iTerm tab a thread runs in when you click it."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kerf kiest het Terminal- of iTerm-tabblad waarin een thread draait als je erop klikt."
+          }
+        }
+      }
+    },
     "NSHumanReadableCopyright" : {
       "extractionState" : "manual",
       "localizations" : {

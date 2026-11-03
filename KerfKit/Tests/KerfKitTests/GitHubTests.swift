@@ -11,3 +11,26 @@ struct GitHubTests {
         #expect(pulls.first?.updatedAt != nil)
     }
 }
+
+struct GitHubSearchTests {
+    @Test func checksAndReviews() throws {
+        let data = Data(#"""
+        {"data":{"search":{"nodes":[
+          {"number":42,"title":"Waiting dot","url":"https://github.com/o/kerf/pull/42","isDraft":false,"updatedAt":"2026-11-03T15:43:58Z",
+           "reviewDecision":"CHANGES_REQUESTED","repository":{"nameWithOwner":"o/kerf"},
+           "commits":{"nodes":[{"commit":{"statusCheckRollup":{"state":"FAILURE"}}}]}},
+          {"number":7,"title":"No CI","url":"https://github.com/o/tempo/pull/7","isDraft":true,"updatedAt":"2026-11-02T10:00:00Z",
+           "reviewDecision":null,"repository":{"nameWithOwner":"o/tempo"},"commits":{"nodes":[{"commit":{"statusCheckRollup":null}}]}},
+          {}
+        ]}}}
+        """#.utf8)
+        let pulls = try #require(GitHub.pulls(fromSearch: data))
+        #expect(pulls.count == 2)
+        #expect(pulls[0].checks == .failing)
+        #expect(pulls[0].changesRequested == true)
+        #expect(pulls[0].updatedAt != nil)
+        #expect(pulls[1].checks == nil)
+        #expect(pulls[1].isDraft == true)
+        #expect(GitHub.searchQuery(login: "JJWindt").contains("involves:JJWindt"))
+    }
+}

@@ -77,7 +77,7 @@ enum CommandLineTool {
         record(agent: name, event: event, payload: payload)
         if agent == .copilot { payload = CopilotPayload.normalized(payload, event: event) }
         let host = ProcessTree.hostApp()
-        let envelope = AgentEnvelope(agent: agent, host: host?.bundlePath, payload: payload)
+        let envelope = AgentEnvelope(agent: agent, host: host?.bundlePath, payload: payload, tty: ProcessTree.terminal())
         guard let line = try? JSONEncoder().encode(envelope) else { return 0 }
         guard envelope.waitsForReply else {
             _ = UnixSocket.send(line, to: KerfPaths.socket, waitForReply: false, timeout: 1)

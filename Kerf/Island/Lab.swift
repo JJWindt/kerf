@@ -53,6 +53,8 @@ struct Lab {
             controller.open(page: .agents)
         },
         "agent-notice": { _ in AgentCenter.shared.preview(nil, sessions: sampleSessions) },
+        // A thread that stopped on a rate limit: the red triangle instead of the tick.
+        "agent-failed": { _ in AgentCenter.shared.preview(nil, sessions: sampleSessions.filter { $0.failure != nil }) },
         "ask": { $0.open(page: .ask) },
         "ask-answer": { controller in
             AskModule.shared.preview(question: "Wat doet een PreToolUse-hook in Claude Code?",
@@ -95,18 +97,26 @@ struct Lab {
     static let terminal = "/System/Applications/Utilities/Terminal.app"
 
     static var sampleSessions: [AgentCenter.Session] {
-        [
-            .init(id: "1", agent: .claudeCode, name: "Claude Code", hostPath: terminal, project: "kerf", state: .working, updated: .now,
-                  lastMessage: nil, title: "Make the timer its own tab", unread: false),
-            .init(id: "2", agent: .claudeCode, name: "Claude Code", hostPath: "/System/Applications/Utilities/Terminal.app", project: "atlas",
-                  state: .idle, updated: .now.addingTimeInterval(-600), lastMessage: "Tests pass.", title: "Fix the sync check-in", unread: true),
-            .init(id: "3", agent: .copilot, name: "Copilot", hostPath: terminal, project: "tempo", state: .waiting, updated: .now,
-                  lastMessage: nil, title: "Review the weekly summary", unread: false),
-        ]
+        var working = AgentCenter.Session(id: "1", agent: .claudeCode, name: "Claude Code", hostPath: terminal, project: "kerf", state: .working,
+                                          updated: .now, lastMessage: nil, title: "Make the timer its own tab", unread: false)
+        working.stateSince = .now.addingTimeInterval(-41 * 60)
+        working.subagents = ["a", "b"]
+        var done = AgentCenter.Session(id: "2", agent: .claudeCode, name: "Claude Code", hostPath: terminal, project: "atlas", state: .idle,
+                                       updated: .now.addingTimeInterval(-600), lastMessage: "Tests pass.", title: "Fix the sync check-in", unread: true)
+        done.stateSince = .now.addingTimeInterval(-600)
+        var waiting = AgentCenter.Session(id: "3", agent: .copilot, name: "Copilot", hostPath: terminal, project: "tempo", state: .waiting,
+                                          updated: .now, lastMessage: nil, title: "Review the weekly summary", unread: false)
+        waiting.stateSince = .now.addingTimeInterval(-12 * 60)
+        var failed = AgentCenter.Session(id: "4", agent: .claudeCode, name: "Claude Code", hostPath: terminal, project: "kerf", state: .idle,
+                                         updated: .now.addingTimeInterval(-180), lastMessage: nil, title: "Port the waiting dot", unread: true)
+        failed.stateSince = .now.addingTimeInterval(-180)
+        failed.needsInput = true
+        failed.failure = "rate_limit"
+        return [waiting, failed, working, done]
     }
 
     static func previewPulls() {
-        let json = #"[{"number":42,"title":"Kerf: AI tab with threads","repository":{"nameWithOwner":"octocat/kerf"},"url":"https://github.com/octocat/kerf/pull/42","updatedAt":"2026-10-31T10:00:00Z","isDraft":false},{"number":17,"title":"Weekly summary in Tempo","repository":{"nameWithOwner":"octocat/tempo"},"url":"https://github.com/octocat/tempo/pull/17","updatedAt":"2026-10-30T18:00:00Z","isDraft":true}]"#
+        let json = #"[{"number":42,"title":"Kerf: AI tab with threads","repository":{"nameWithOwner":"octocat/kerf"},"url":"https://github.com/octocat/kerf/pull/42","updatedAt":"2026-10-31T10:00:00Z","isDraft":false,"checks":"failing"},{"number":17,"title":"Weekly summary in Tempo","repository":{"nameWithOwner":"octocat/tempo"},"url":"https://github.com/octocat/tempo/pull/17","updatedAt":"2026-10-30T18:00:00Z","isDraft":true,"checks":"pending","changesRequested":true}]"#
         PullRequests.shared.preview(pulls: GitHub.decode([GitHub.Item].self, from: Data(json.utf8)) ?? [])
     }
 

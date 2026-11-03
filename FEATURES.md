@@ -64,10 +64,14 @@ git checkout upstream/main -- Kerf/Modules/Music
 | "Update…" in Settings → Agents when the installed hooks are older than this version's | `HookInstaller.isCurrent`, `AgentSettings.swift` |
 | Copilot threads show GitHub's Copilot mark instead of the generic tile | `AgentMark` in `AgentsPage.swift`, `Assets.xcassets/Copilot.imageset` |
 | A finished thread makes no sound unless you turn it on (Settings → Agents) | `AgentCenter.soundsDoneKey`, `AgentSettings.swift` |
+| A click opens the thread's own place: its Terminal or iTerm tab (by tty, AppleScript), its Claude desktop session (`claude://code/continue?session=…`), or its editor window by project name (Accessibility) | `ThreadLink`, `AgentCenter.open`, `System/WindowRaiser.swift` |
+| How long a thread has worked, waited or been done: "Waiting for you · 12 min" | `Session.stateSince`, `ThreadRow.details` |
+| Subagents per thread: "Working · 2 subagents" | `SubagentStart`/`SubagentStop` hooks, `Session.subagents` |
+| A turn that ended on an API error (rate limit, overloaded, …) shows as stopped, with a red triangle in the notch instead of the tick | `StopFailure` hook, `Session.failure`, `Compact.swift` |
+| CI and reviews on your pull requests: "Checks failed", "Changes requested", "Checks running" | `GitHub.searchQuery`, `PullRequests.refresh`, `PullDetails` |
 | The island stays in the MacBook's notch; floating islands on other displays are off by default | `Preferences.swift`, `IslandManager.currentController` |
 
 ## Wishlist
 
-- **Subagents per thread.** Show "2 subagents running" on a thread, from `SubagentStart`/`SubagentStop`.
-- **Live activity.** What a thread is doing right now ("Bash: npm test", "Edit: Foo.swift"), from `PreToolUse`.
-- **Jump to the exact session** in the Claude desktop app, if it offers a link for that.
+Nothing open. Left out on purpose: live activity per thread ("Bash: npm test"); the app the
+thread runs in shows that better.

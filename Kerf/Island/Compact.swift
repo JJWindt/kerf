@@ -11,7 +11,7 @@ enum CompactPresentation: Equatable {
     case agent(agent: AgentKind, hostPath: String?)
     /// Threads finished or asking in their own window: the newest's mark left, a tick (or a
     /// bubble) right, with how many when more than one. Stays until you click or look.
-    case agentNotice(agent: AgentKind, hostPath: String?, count: Int, needsInput: Bool)
+    case agentNotice(agent: AgentKind, hostPath: String?, count: Int, needsInput: Bool, failed: Bool)
 
     /// Short-lived or urgent: shows even where it covers an app's menus.
     var showsOverMenus: Bool {
@@ -21,7 +21,7 @@ enum CompactPresentation: Equatable {
     }
 
     var noticeCount: Int {
-        if case .agentNotice(_, _, let count, _) = self { count } else { 0 }
+        if case .agentNotice(_, _, let count, _, _) = self { count } else { 0 }
     }
 
     /// Same kind: update in place. Another kind: fade out, swap, fade in.
@@ -87,7 +87,7 @@ struct CompactView: View {
             BannerSideView(side: side)
         case .agent(let agent, let hostPath):
             AgentMark(agent: agent, hostPath: hostPath, size: 18)
-        case .agentNotice(let agent, let hostPath, _, _):
+        case .agentNotice(let agent, let hostPath, _, _, _):
             AgentMark(agent: agent, hostPath: hostPath, size: 18)
         case nil:
             EmptyView()
@@ -100,10 +100,12 @@ struct CompactView: View {
             BannerSideView(side: side)
         case .agent:
             AgentDot(count: waitingCount)
-        case .agentNotice(_, _, let count, let needsInput):
+        case .agentNotice(_, _, let count, let needsInput, let failed):
             HStack(spacing: 3) {
-                Image(systemName: needsInput ? "ellipsis.bubble.fill" : "checkmark.circle.fill").font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(Color(nsColor: needsInput ? .systemOrange : .systemGreen))
+                // A thread that stopped on an error outranks one that asks, which outranks one that's done.
+                Image(systemName: failed ? "exclamationmark.triangle.fill" : needsInput ? "ellipsis.bubble.fill" : "checkmark.circle.fill")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(Color(nsColor: failed ? .systemRed : needsInput ? .systemOrange : .systemGreen))
                 if count > 1 {
                     Text(verbatim: "\(count)").font(.system(size: 11, weight: .semibold).monospacedDigit()).foregroundStyle(.white.opacity(0.8))
                         .contentTransition(.numericText())
