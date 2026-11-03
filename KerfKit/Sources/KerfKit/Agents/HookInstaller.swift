@@ -42,7 +42,11 @@ public enum HookInstaller {
             ]
         case .copilot:
             [
+                // Copilot CLI asks through PermissionRequest; VS Code's agent decides in PreToolUse.
                 Hook(event: "PermissionRequest", matcher: nil, timeout: 600),
+                // Copilot's hooks have no matcher: every tool call comes by, none waits.
+                Hook(event: "PreToolUse", matcher: nil, timeout: 10),
+                Hook(event: "PostToolUse", matcher: nil, timeout: 10),
                 Hook(event: "Notification", matcher: nil, timeout: 10),
                 Hook(event: "Stop", matcher: nil, timeout: 10),
                 Hook(event: "SessionStart", matcher: nil, timeout: 10),
@@ -61,7 +65,9 @@ public enum HookInstaller {
         let events = hooks(for: .copilot).map { hook in
             OrderedJSON.Member(hook.event, .array([.object([
                 .init("type", .string("command")),
-                .init("bash", .string("\(command(for: .copilot)) \(hook.event)")),
+                // Never fail: VS Code denies a tool call when a PreToolUse hook errors, e.g. with
+                // Kerf removed.
+                .init("bash", .string("\(command(for: .copilot)) \(hook.event) || true")),
                 .init("timeoutSec", .number(String(hook.timeout))),
             ])]))
         }
