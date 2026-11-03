@@ -7,7 +7,9 @@ final class Hub {
     static let shared = Hub()
 
     private(set) var presentation: CompactPresentation?
-    private(set) var agentWaiting = false
+    /// How many threads are blocked on you; the orange dot shows while it's above zero.
+    private(set) var waitingCount = 0
+    var agentWaiting: Bool { waitingCount > 0 }
     private(set) var pages: [IslandPage] = IslandPage.arrange(offloadActive: false).bar
     /// Pages under "…".
     private(set) var morePages: [IslandPage] = IslandPage.arrange(offloadActive: false).more
@@ -63,8 +65,8 @@ final class Hub {
     /// Only sets what changed: every set redraws the views that read it.
     func refresh() {
         let agents = AgentCenter.shared
-        let waiting = !agents.requests.isEmpty
-        if agentWaiting != waiting { agentWaiting = waiting }
+        let waiting = agents.waitingSessions
+        if waitingCount != waiting.count { waitingCount = waiting.count }
         let offload = OffloadModule.shared
         let arranged = IslandPage.arrange(offloadActive: offload.isActive)
         if pages != arranged.bar { pages = arranged.bar }
@@ -77,7 +79,7 @@ final class Hub {
         }
         let busy: CompactPresentation? = level ?? banner ?? offload.compactPresentation ?? TimerModule.shared.compactPresentation
             ?? RenderWatcher.shared.compactPresentation ?? DownloadsWatcher.shared.compactPresentation
-        let waitingAgent: CompactPresentation? = waiting ? .agent(hostPath: agents.requests.first?.hostPath) : nil
+        let waitingAgent: CompactPresentation? = waiting.first.map { .agent(agent: $0.agent, hostPath: $0.hostPath) }
         let new = busy ?? notice ?? NowPlayingModule.shared.compactPresentation ?? waitingAgent
         if presentation != new { presentation = new }
         observers.forEach { $0() }

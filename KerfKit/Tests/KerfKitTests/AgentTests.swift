@@ -100,6 +100,26 @@ struct HookInstallerTests {
         #expect(try HookInstaller.remove(from: installed, agent: .claudeCode) == existing)
     }
 
+    @Test func knowsWhenHooksAreOutdated() throws {
+        let current = try HookInstaller.install(into: nil, agent: .claudeCode)
+        #expect(HookInstaller.isCurrent(in: current, agent: .claudeCode))
+        // An older Kerf installed no PostToolUse hooks.
+        var root = try OrderedJSON.parse(current)
+        var events = try #require(root["hooks"])
+        events["PostToolUse"] = nil
+        events["PostToolUseFailure"] = nil
+        root["hooks"] = events
+        let older = root.printed()
+        #expect(HookInstaller.isInstalled(in: older, agent: .claudeCode))
+        #expect(!HookInstaller.isCurrent(in: older, agent: .claudeCode))
+        #expect(!HookInstaller.isCurrent(in: nil, agent: .claudeCode))
+    }
+
+    @Test func toolsFinishing() {
+        #expect(AgentEvent(.object(["hook_event_name": "PostToolUse", "tool_name": "Bash"])) == .toolFinished(tool: "Bash"))
+        #expect(AgentEvent(.object(["hook_event_name": "PostToolUseFailure", "tool_name": "Edit"])) == .toolFinished(tool: "Edit"))
+    }
+
     @Test func startsANewFile() throws {
         let file = try HookInstaller.install(into: nil, agent: .codex)
         #expect(HookInstaller.isInstalled(in: file, agent: .codex))
