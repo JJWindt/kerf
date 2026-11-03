@@ -353,6 +353,16 @@ struct CodeThreadLinkTests {
     }
 }
 
+struct SubagentTests {
+    @Test func subagents() {
+        #expect(AgentEvent(.object(["hook_event_name": "SubagentStart", "agent_id": "a1", "agent_type": "Explore"])) == .subagentStarted(id: "a1"))
+        #expect(AgentEvent(.object(["hook_event_name": "SubagentStop", "agent_id": "a1"])) == .subagentStopped(id: "a1"))
+        #expect(AgentEvent(.object(["hook_event_name": "Stop", "background_tasks": .array([])])) == .stop(lastMessage: nil, subagentsRunning: false))
+        #expect(AgentEvent(.object(["hook_event_name": "Stop", "background_tasks": .array([.object(["id": "t1", "type": "subagent"])])]))
+            == .stop(lastMessage: nil, subagentsRunning: true))
+    }
+}
+
 struct ThreadLinkTests {
     @Test func links() {
         #expect(ThreadLink.of(host: "/System/Applications/Utilities/Terminal.app", tty: "/dev/ttys003", project: "kerf", desktopSessionID: nil)

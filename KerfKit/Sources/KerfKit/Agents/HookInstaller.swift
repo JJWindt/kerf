@@ -23,6 +23,9 @@ public enum HookInstaller {
             [
                 Hook(event: "PermissionRequest", matcher: nil, timeout: 600),
                 Hook(event: "PreToolUse", matcher: "AskUserQuestion", timeout: 600),
+                // Subagents per thread.
+                Hook(event: "SubagentStart", matcher: nil, timeout: 10),
+                Hook(event: "SubagentStop", matcher: nil, timeout: 10),
                 // A tool that ran means a waiting thread moved on, also when you answered in the terminal.
                 Hook(event: "PostToolUse", matcher: nil, timeout: 10),
                 Hook(event: "PostToolUseFailure", matcher: nil, timeout: 10),

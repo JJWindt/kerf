@@ -203,6 +203,7 @@ struct Lab {
             .init(id: "3", agent: .codex, name: "Codex", hostPath: t3, project: "tempo", state: .waiting, updated: .now,
                   lastMessage: nil, title: "Review the weekly summary", unread: false),
         ]
+        sessions[0].subagents = ["a", "b"]
         // How long each has worked, been done or waited.
         for (index, minutes) in [41.0, 10, 12].enumerated() { sessions[index].stateSince = .now.addingTimeInterval(-minutes * 60) }
         return sessions

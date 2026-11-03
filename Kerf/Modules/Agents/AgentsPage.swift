@@ -137,7 +137,7 @@ struct ThreadRow: View {
         .buttonStyle(.plain)
     }
 
-    /// "Waiting for you · 12 min · kerf", "Done 5 min ago · atlas".
+    /// "Waiting for you · 12 min · 2 subagents · kerf", "Done 5 min ago · atlas".
     private func details(at now: Date) -> String {
         let elapsed = now.timeIntervalSince(session.stateSince)
         var parts = [stateText]
@@ -148,8 +148,16 @@ struct ThreadRow: View {
                 parts.append(Duration.seconds(elapsed).formatted(.units(allowed: [.hours, .minutes], width: .abbreviated)))
             }
         }
+        if let subagentsText { parts.append(subagentsText) }
         if let project = session.project { parts.append(project) }
         return parts.joined(separator: " · ")
+    }
+
+    /// "2 subagents" while the thread runs them.
+    private var subagentsText: String? {
+        let count = session.subagents.count
+        guard session.state != .idle, count > 0 else { return nil }
+        return count == 1 ? String(localized: "1 subagent") : String(localized: "\(count) subagents")
     }
 
     private var stateText: String {
