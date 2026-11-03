@@ -100,6 +100,34 @@ struct HookInstallerTests {
         #expect(try HookInstaller.remove(from: installed, agent: .claudeCode) == existing)
     }
 
+    @Test func knowsWhenHooksAreOutdated() throws {
+        let current = try HookInstaller.install(into: nil, agent: .claudeCode)
+        #expect(HookInstaller.isCurrent(in: current, agent: .claudeCode))
+        // An older Kerf installed no PostToolUse hooks.
+        var root = try OrderedJSON.parse(current)
+        var events = try #require(root["hooks"])
+        events["PostToolUse"] = nil
+        events["PostToolUseFailure"] = nil
+        root["hooks"] = events
+        let older = root.printed()
+        #expect(HookInstaller.isInstalled(in: older, agent: .claudeCode))
+        #expect(!HookInstaller.isCurrent(in: older, agent: .claudeCode))
+        #expect(!HookInstaller.isCurrent(in: nil, agent: .claudeCode))
+    }
+
+    @Test func vsCodeQuestionsOnlyWait() {
+        let payload: JSONValue = .object(["hook_event_name": "PreToolUse", "tool_name": "vscode_askQuestions", "tool_input": .object([
+            "questions": .array([.object(["header": "Stap 1", "question": "Mag stap 1 door?", "options": .array([.object(["label": "Ja"])])])]),
+        ])])
+        #expect(AgentEvent(payload) == .askedInApp(tool: "vscode_askQuestions"))
+        #expect(!AgentEnvelope(agent: .copilot, payload: payload).waitsForReply)
+    }
+
+    @Test func toolsFinishing() {
+        #expect(AgentEvent(.object(["hook_event_name": "PostToolUse", "tool_name": "Bash"])) == .toolFinished(tool: "Bash"))
+        #expect(AgentEvent(.object(["hook_event_name": "PostToolUseFailure", "tool_name": "Edit"])) == .toolFinished(tool: "Edit"))
+    }
+
     @Test func startsANewFile() throws {
         let file = try HookInstaller.install(into: nil, agent: .codex)
         #expect(HookInstaller.isInstalled(in: file, agent: .codex))
@@ -170,6 +198,11 @@ struct AgentDetailsTests {
         let helper = "/Applications/T3 Code (Nightly).app/Contents/Frameworks/T3 Code (Nightly) Helper.app/Contents/MacOS/T3 Code (Nightly) Helper"
         #expect(ProcessTree.app(containing: helper) == ProcessTree.App(name: "T3 Code (Nightly)", bundlePath: "/Applications/T3 Code (Nightly).app"))
         #expect(ProcessTree.app(containing: "/opt/homebrew/bin/claude") == nil)
+        // The desktop app's bundled Claude Code CLI is skipped, so the walk reaches Claude.app.
+        let cli = "/Users/me/Library/Application Support/Claude/claude-code/2.1.309/5af865b9901c/claude.app/Contents/MacOS/claude"
+        #expect(ProcessTree.app(containing: cli) == nil)
+        #expect(ProcessTree.app(containing: "/Applications/Claude.app/Contents/Helpers/disclaimer")
+            == ProcessTree.App(name: "Claude", bundlePath: "/Applications/Claude.app"))
     }
 
     @Test func titles() {
@@ -247,7 +280,7 @@ struct CopilotTests {
         let root = try OrderedJSON.parse(text)
         #expect(root["version"] == .number("1"))
         let permission = try #require(root["hooks"]?["PermissionRequest"]?.arrayValue?.first)
-        #expect(permission["bash"]?.stringValue == #""$HOME/Library/Application Support/Kerf/bin/kerf" hook copilot PermissionRequest"#)
+        #expect(permission["bash"]?.stringValue == #""$HOME/Library/Application Support/Kerf/bin/kerf" hook copilot PermissionRequest || true"#)
         #expect(permission["timeoutSec"] == .number("600"))
         #expect(root["hooks"]?["Stop"]?.arrayValue?.first?["timeoutSec"] == .number("10"))
         #expect(HookInstaller.isCopilotFile(text))

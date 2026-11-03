@@ -40,10 +40,13 @@ public enum ProcessTree {
     }
 
     /// The outermost .app in an executable's path: a helper inside an app (Electron, Xcode)
-    /// counts as that app.
+    /// counts as that app. Claude Code's own CLI bundle is no app you look at: the Claude
+    /// desktop app runs it from `…/claude-code/<version>/<hash>/claude.app`, so the walk goes on
+    /// to Claude.app itself.
     public static func app(containing path: String) -> App? {
         guard let range = path.range(of: ".app/") else { return nil }
         let bundle = String(path[..<range.lowerBound]) + ".app"
+        if URL(fileURLWithPath: bundle).lastPathComponent == "claude.app", bundle.contains("/claude-code/") { return nil }
         return App(name: URL(fileURLWithPath: bundle).deletingPathExtension().lastPathComponent, bundlePath: bundle)
     }
 
