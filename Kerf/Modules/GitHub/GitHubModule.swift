@@ -36,6 +36,8 @@ final class GitHubModule {
     var folder = ""
     private(set) var isLoading = false
     private(set) var problem: String?
+    /// Your GitHub login, for the pull request search; asked once.
+    @ObservationIgnored private var login: String?
     @ObservationIgnored private var loadedAt = Date.distantPast
 
     nonisolated static var executable: String? {
@@ -59,6 +61,12 @@ final class GitHubModule {
         }.value
     }
 
+    /// Pull requests with their checks and reviews, which `gh search prs` leaves out.
+    nonisolated static func searchPulls(_ query: String?) async -> Data? {
+        guard let query, !query.isEmpty else { return nil }
+        return await gh(["api", "graphql", "-f", "query=\(query)"])
+    }
+
     /// At most every two minutes, when the page opens.
     func refreshIfStale() {
         guard Date().timeIntervalSince(loadedAt) > 120, !isLoading else { return }
@@ -71,7 +79,10 @@ final class GitHubModule {
             return
         }
         isLoading = true
-        async let pulls = Self.gh(["search", "prs", "--involves", "@me", "--state", "open", "--json", "number,title,repository,url,updatedAt,isDraft", "--limit", "20"])
+        if login == nil, let data = await Self.gh(["api", "user", "--jq", ".login"]) {
+            login = String(decoding: data, as: UTF8.self).trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+        async let pulls = Self.searchPulls(login.map { GitHub.searchQuery(login: $0) })
         async let issues = Self.gh(["search", "issues", "--assignee", "@me", "--state", "open", "--json", "number,title,repository,url,updatedAt", "--limit", "8"])
         async let repos = Self.gh(["repo", "list", "--limit", "100", "--json", "nameWithOwner,pushedAt,isPrivate"])
         let (p, i, r) = await (pulls, issues, repos)
@@ -81,7 +92,7 @@ final class GitHubModule {
             return
         }
         problem = nil
-        self.pulls = p.flatMap { GitHub.decode([GitHub.Item].self, from: $0) } ?? []
+        self.pulls = p.flatMap(GitHub.pulls(fromSearch:)) ?? []
         self.issues = i.flatMap { GitHub.decode([GitHub.Item].self, from: $0) } ?? []
         self.repos = (GitHub.decode([GitHub.Repo].self, from: r) ?? []).sorted { ($0.pushedAt ?? .distantPast) > ($1.pushedAt ?? .distantPast) }
         if repo == nil { repo = self.repos.first }

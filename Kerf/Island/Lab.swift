@@ -200,7 +200,7 @@ struct Lab {
     }
 
     static func previewPulls() {
-        let json = #"[{"number":42,"title":"Kerf: AI tab with threads","repository":{"nameWithOwner":"octocat/kerf"},"url":"https://github.com/octocat/kerf/pull/42","updatedAt":"2026-10-31T10:00:00Z","isDraft":false},{"number":17,"title":"Weekly summary in Tempo","repository":{"nameWithOwner":"octocat/tempo"},"url":"https://github.com/octocat/tempo/pull/17","updatedAt":"2026-10-30T18:00:00Z","isDraft":true}]"#
+        let json = #"[{"number":42,"title":"Kerf: AI tab with threads","repository":{"nameWithOwner":"octocat/kerf"},"url":"https://github.com/octocat/kerf/pull/42","updatedAt":"2026-10-31T10:00:00Z","isDraft":false,"checks":"failing"},{"number":17,"title":"Weekly summary in Tempo","repository":{"nameWithOwner":"octocat/tempo"},"url":"https://github.com/octocat/tempo/pull/17","updatedAt":"2026-10-30T18:00:00Z","isDraft":true,"checks":"pending","changesRequested":true}]"#
         GitHubModule.shared.preview(pulls: GitHub.decode([GitHub.Item].self, from: Data(json.utf8)) ?? [])
     }
 
