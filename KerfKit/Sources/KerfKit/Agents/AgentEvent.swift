@@ -32,6 +32,11 @@ public enum AgentEvent: Equatable, Sendable {
     case question([AgentQuestion], raw: JSONValue)
     case notification(type: String?, message: String?)
     case stop(lastMessage: String?)
+    /// The tool asks you in its own window and Kerf can't answer for you there (VS Code's
+    /// questions): the thread waits on you, and nothing waits on Kerf.
+    case askedInApp(tool: String)
+    /// A tool ran (or failed): a thread that waited on you has moved on.
+    case toolFinished(tool: String)
     case sessionStart
     case sessionEnd
     case promptSubmitted(String?)
@@ -42,6 +47,9 @@ public enum AgentEvent: Equatable, Sendable {
         switch payload["hook_event_name"]?.string ?? "" {
         case "PermissionRequest":
             self = .permission(tool: tool, input: payload["tool_input"] ?? .null, suggestions: payload["permission_suggestions"]?.array ?? [])
+        // VS Code asks in its own chat and takes no answers from a hook: Kerf only shows it waits.
+        case "PreToolUse" where tool == "vscode_askQuestions":
+            self = .askedInApp(tool: tool)
         case "PreToolUse" where tool == "AskUserQuestion":
             let raw = payload["tool_input"]?["questions"] ?? .array([])
             self = .question((raw.array ?? []).compactMap(AgentQuestion.init), raw: raw)
@@ -49,6 +57,8 @@ public enum AgentEvent: Equatable, Sendable {
             self = .notification(type: payload["notification_type"]?.string, message: payload["message"]?.string)
         case "Stop":
             self = .stop(lastMessage: payload["last_assistant_message"]?.string)
+        case "PostToolUse", "PostToolUseFailure":
+            self = .toolFinished(tool: tool)
         case "SessionStart": self = .sessionStart
         case "SessionEnd": self = .sessionEnd
         case "UserPromptSubmit": self = .promptSubmitted(payload["prompt"]?.string)

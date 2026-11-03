@@ -63,7 +63,7 @@ struct IslandBody: View {
                 presentation: island.presentation,
                 centerWidth: island.geometry.style.centerWidth,
                 height: island.geometry.style.bandHeight,
-                showsAgentDot: island.showsAgentDot
+                waitingCount: island.waitingCount
             )
             .modifier(IslandContentEffect(hidden: 1 - island.compactShown, blur: 8))
             if island.expandedMounted {
