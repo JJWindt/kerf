@@ -64,7 +64,8 @@ git checkout upstream/main -- Kerf/Modules/Music
 | "Update…" in Settings → Agents when the installed hooks are older than this version's | `HookInstaller.isCurrent`, `AgentSettings.swift` |
 | Copilot threads show GitHub's Copilot mark instead of the generic tile | `AgentMark` in `AgentsPage.swift`, `Assets.xcassets/Copilot.imageset` |
 | A finished thread makes no sound unless you turn it on (Settings → Agents) | `AgentCenter.soundsDoneKey`, `AgentSettings.swift` |
-| A click opens the thread's own place: its Terminal or iTerm tab (by tty, AppleScript), its Claude desktop session (`claude://code/continue?session=…`), or its editor window by project name (Accessibility) | `ThreadLink`, `AgentCenter.open`, `System/WindowRaiser.swift` |
+| A click opens the thread's own place: its Terminal or iTerm tab (by tty, AppleScript), its Claude desktop session (`claude://code/continue?session=…`), or VS Code's (or Cursor's) window by opening the thread's repository folder, other editors' windows by project name (Accessibility) | `ThreadLink`, `AgentCenter.open`, `System/WindowRaiser.swift` |
+| Threads whose terminal tab or app is gone leave the list within a minute, also without a SessionEnd | `RunningThreads.liveTerminals`, `AgentCenter.merge` |
 | How long a thread has worked, waited or been done: "Waiting for you · 12 min" | `Session.stateSince`, `ThreadRow.details` |
 | Subagents per thread: "Working · 2 subagents" | `SubagentStart`/`SubagentStop` hooks, `Session.subagents` |
 | A turn that ended on an API error (rate limit, overloaded, …) shows as stopped, with a red triangle in the notch instead of the tick | `StopFailure` hook, `Session.failure`, `Compact.swift` |

@@ -345,6 +345,12 @@ struct ThreadDetailsTests {
             == .url(URL(string: "claude://code/continue?session=local_661abf77-b1c8")!))
         #expect(ThreadLink.of(host: "/Applications/Claude.app", tty: nil, project: "kerf", desktopSessionID: nil) == .app)
         #expect(ThreadLink.of(host: "/Applications/Visual Studio Code.app", tty: nil, project: "kerf", desktopSessionID: nil) == .window(project: "kerf"))
+        // With its folder, VS Code opens that and needs no Accessibility; a subfolder goes up to the repository.
+        let repo = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+            .deletingLastPathComponent().path
+        #expect(ThreadLink.of(host: "/Applications/Visual Studio Code.app", tty: nil, project: "kerf", cwd: repo + "/KerfKit/Sources",
+                              desktopSessionID: nil) == .folder(repo))
+        #expect(ThreadLink.of(host: "/Applications/Xcode.app", tty: nil, project: "kerf", cwd: repo, desktopSessionID: nil) == .window(project: "kerf"))
         #expect(ThreadLink.title("AgentCenter.swift — kerf — Visual Studio Code", names: "kerf"))
         #expect(!ThreadLink.title("README.md — kerf-upstream — Visual Studio Code", names: "kerf"))
         #expect(ThreadLink.title("kerf", names: "kerf"))

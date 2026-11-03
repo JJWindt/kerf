@@ -12,6 +12,7 @@ enum CommandLineTool {
       kerf notify --ask [--agent NAME] [--title TITLE] MESSAGE
                                       asks to allow; exit 0 allowed, 1 declined, 2 no answer
       kerf answer allow|always|deny   answers the first waiting question
+      kerf open ID                    opens a thread as a click would (IDs in kerf debug)
       kerf log on|off|show|clear      keeps every hook payload in a local file, to see what
                                       a tool sends
       kerf debug                      what the running app sees
@@ -39,6 +40,14 @@ enum CommandLineTool {
                 return 64
             }
             let envelope = AgentEnvelope(agent: .other, payload: .object(["hook_event_name": "KerfAnswer", "decision": .string(arguments[2])]))
+            guard let line = try? JSONEncoder().encode(envelope) else { return 2 }
+            return UnixSocket.send(line, to: KerfPaths.socket, waitForReply: false, timeout: 1) == nil ? 2 : 0
+        case "open":
+            guard arguments.count > 2 else {
+                print(usage)
+                return 64
+            }
+            let envelope = AgentEnvelope(agent: .other, payload: .object(["hook_event_name": "KerfOpen", "thread": .string(arguments[2])]))
             guard let line = try? JSONEncoder().encode(envelope) else { return 2 }
             return UnixSocket.send(line, to: KerfPaths.socket, waitForReply: false, timeout: 1) == nil ? 2 : 0
         case "log":

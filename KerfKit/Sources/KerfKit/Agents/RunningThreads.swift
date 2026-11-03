@@ -59,6 +59,12 @@ public enum RunningThreads {
         return (try? handle.read(upToCount: Int(length))) ?? Data()
     }
 
+    /// Every terminal some process still has open: `/dev/ttys003`. A thread whose tty isn't
+    /// among them had its window closed.
+    public static func liveTerminals() -> Set<String> {
+        Set(allProcesses().compactMap(ProcessTree.ownTerminal))
+    }
+
     static func allProcesses() -> [pid_t] {
         let estimate = proc_listallpids(nil, 0)
         guard estimate > 0 else { return [] }

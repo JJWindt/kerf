@@ -36,6 +36,8 @@ final class AgentCenter {
         var nativeID: String?
         /// The terminal it runs in, to pick the right tab: `/dev/ttys003`.
         var tty: String?
+        /// Where it works, to open that folder in its editor.
+        var cwd: String?
         /// Since when it works, waits or is done.
         var stateSince = Date.now
         /// Subagents running for this thread, by their id.
@@ -76,19 +78,34 @@ final class AgentCenter {
             Task { @MainActor in AgentCenter.shared.receive(line, connection) }
         }
         findRunning()
+        Task {
+            while true {
+                try? await Task.sleep(for: .seconds(60))
+                AgentCenter.shared.findRunning()
+            }
+        }
     }
 
     /// Threads already busy before Kerf heard of them: started before Kerf, or while it restarted.
     /// At launch and when the AI page opens; hooks tell the rest.
+    /// Also once a minute, to let go of threads whose window was closed without a SessionEnd.
     func findRunning() {
         Task.detached(priority: .utility) {
             let found = RunningThreads.claudeCode()
-            await MainActor.run { AgentCenter.shared.merge(found) }
+            let terminals = RunningThreads.liveTerminals()
+            await MainActor.run { AgentCenter.shared.merge(found, terminals: terminals) }
         }
     }
 
-    private func merge(_ found: [RunningThreads.Found]) {
+    private func merge(_ found: [RunningThreads.Found], terminals: Set<String>) {
         var next = sessions
+        // Its terminal tab or its app is gone: so is the thread, whatever it last said.
+        let running = Set(NSWorkspace.shared.runningApplications.compactMap { $0.bundleURL?.path })
+        next.removeAll { session in
+            if let tty = session.tty { return !terminals.contains(tty) }
+            if let host = session.hostPath { return !running.contains(host) }
+            return false
+        }
         let ids = Set(found.map { "\(AgentKind.claudeCode.rawValue)..\($0.sessionID)" })
         // A guess whose turn ended without a hook (Kerf missed it) goes again.
         next.removeAll { $0.foundByScan && !ids.contains($0.id) }
@@ -101,6 +118,7 @@ final class AgentCenter {
             session.nativeID = thread.sessionID
             session.stateSince = thread.updated
             session.tty = thread.tty
+            session.cwd = thread.cwd
             next.append(session)
         }
         next.sort { $0.updated > $1.updated }
@@ -132,8 +150,25 @@ final class AgentCenter {
                 "accessibility": .bool(AXIsProcessTrusted()),
                 "waiting": .number(Double(requests.count)),
                 "blocked": .number(Double(waitingSessions.count)),
+                "list": .array(visibleThreads.map { session in
+                    .object([
+                        "id": .string(session.id),
+                        "title": session.title.map(JSONValue.string) ?? .null,
+                        "state": .string(session.failure.map { "stopped: \($0)" } ?? "\(session.state)"),
+                        "minutes": .number((Date.now.timeIntervalSince(session.stateSince) / 60).rounded()),
+                        "subagents": .number(Double(session.subagents.count)),
+                        "host": session.hostPath.map(JSONValue.string) ?? .null,
+                        "tty": session.tty.map(JSONValue.string) ?? .null,
+                    ])
+                }),
             ])
             connection?.reply(report.encoded())
+            return
+        }
+        // `kerf open`: a thread as if clicked, by (part of) its id.
+        if payload["hook_event_name"]?.string == "KerfOpen" {
+            connection?.reply(nil)
+            if let id = payload["thread"]?.string, let session = sessions.first(where: { $0.id.contains(id) }) { open(session) }
             return
         }
         // `kerf answer`: answer the first waiting question from a script.
@@ -156,6 +191,7 @@ final class AgentCenter {
         session.project = payload.project ?? session.project
         session.hostPath = envelope.host ?? session.hostPath
         session.tty = envelope.tty ?? session.tty
+        session.cwd = payload.workingDirectory ?? session.cwd
         // A thread Kerf joins halfway gets its title from the transcript.
         if isNew, session.title == nil, let transcript = payload.transcriptPath { loadTitle(sessionID, from: transcript) }
 
@@ -309,7 +345,7 @@ final class AgentCenter {
             let desktopID = session.nativeID.flatMap {
                 ThreadLink.desktopSessionID(forCLI: $0, in: KerfPaths.claudeDesktopSessions)
             }
-            let link = ThreadLink.of(host: host, tty: session.tty, project: session.project, desktopSessionID: desktopID)
+            let link = ThreadLink.of(host: host, tty: session.tty, project: session.project, cwd: session.cwd, desktopSessionID: desktopID)
             await MainActor.run { Self.follow(link, host: host) }
         }
     }
@@ -319,12 +355,18 @@ final class AgentCenter {
         switch link {
         case .terminalTab(let script):
             // osascript, not NSAppleScript: Terminal may take a moment and the island shouldn't wait.
+            // The script picks the tab and window; macOS only lets Kerf itself bring Terminal forward.
             let process = Process()
             process.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
             process.arguments = ["-e", script]
+            process.terminationHandler = { _ in
+                Task { @MainActor in openApp(app) }
+            }
             if (try? process.run()) == nil { openApp(app) }
         case .url(let url):
             NSWorkspace.shared.open(url)
+        case .folder(let path):
+            NSWorkspace.shared.open([URL(fileURLWithPath: path)], withApplicationAt: app, configuration: NSWorkspace.OpenConfiguration())
         case .window(let project):
             openApp(app)
             WindowRaiser.raise(appAt: host) { ThreadLink.title($0, names: project) }

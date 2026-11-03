@@ -7,13 +7,16 @@ public enum ThreadLink: Equatable, Sendable {
     case terminalTab(script: String)
     /// A Claude desktop session, through its own deep link.
     case url(URL)
-    /// An editor (VS Code, Cursor, Xcode): its window whose title names the project.
+    /// VS Code and its forks: opening the project's folder brings up the window that has it,
+    /// without any permission.
+    case folder(String)
+    /// Another editor: its window whose title names the project (needs Accessibility).
     case window(project: String)
     /// Only the app.
     case app
 
     /// What to open for a thread in `host` (the .app bundle path).
-    public static func of(host: String?, tty: String?, project: String?, desktopSessionID: String?) -> ThreadLink {
+    public static func of(host: String?, tty: String?, project: String?, cwd: String? = nil, desktopSessionID: String?) -> ThreadLink {
         let name = host.map { URL(fileURLWithPath: $0).deletingPathExtension().lastPathComponent }
         switch name {
         case "Terminal":
@@ -22,6 +25,9 @@ public enum ThreadLink: Equatable, Sendable {
             if let tty, isTTY(tty) { return .terminalTab(script: iTermScript(tty)) }
         case "Claude":
             if let id = desktopSessionID, let url = desktopURL(id) { return .url(url) }
+        case "Visual Studio Code", "Visual Studio Code - Insiders", "Cursor", "Windsurf", "VSCodium":
+            if let cwd, !cwd.isEmpty { return .folder(repositoryRoot(of: cwd)) }
+            if let project, !project.isEmpty { return .window(project: project) }
         default:
             if let project, !project.isEmpty { return .window(project: project) }
         }
@@ -62,6 +68,17 @@ public enum ThreadLink: Equatable, Sendable {
             parts = parts.flatMap { $0.components(separatedBy: separator) }
         }
         return parts.contains { $0.trimmingCharacters(in: .whitespaces) == project }
+    }
+
+    /// The nearest folder up with a `.git`: the folder an editor window usually has open, so a
+    /// thread in a subfolder doesn't open a second window.
+    public static func repositoryRoot(of path: String) -> String {
+        var url = URL(fileURLWithPath: path)
+        while url.path != "/" {
+            if FileManager.default.fileExists(atPath: url.appendingPathComponent(".git").path) { return url.path }
+            url.deleteLastPathComponent()
+        }
+        return path
     }
 
     static func isTTY(_ tty: String) -> Bool {
