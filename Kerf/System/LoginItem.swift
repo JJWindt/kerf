@@ -12,11 +12,12 @@ enum LoginItem {
         }
     }
 
-    /// Kerf opens at login by default. Only from /Applications, so a debug build never registers.
+    /// Kerf opens at login by default. Only from an Applications folder, so a debug build never registers.
     static func registerOnFirstLaunch() {
         let defaults = UserDefaults.standard
         guard !defaults.bool(forKey: Preferences.didRegisterLoginItem),
-              Bundle.main.bundlePath.hasPrefix("/Applications/") else { return }
+              Bundle.main.bundlePath.hasPrefix("/Applications/")
+                || Bundle.main.bundlePath.hasPrefix(NSHomeDirectory() + "/Applications/") else { return }
         set(true)
         defaults.set(true, forKey: Preferences.didRegisterLoginItem)
     }

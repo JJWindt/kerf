@@ -292,30 +292,3 @@ struct RunningThreadTests {
         #expect(RunningThreads.arguments(getpid()).isEmpty == false || CommandLine.arguments.count <= 1)
     }
 }
-
-struct CodeThreadLinkTests {
-    @Test func findsTheChatForASession() throws {
-        let home = FileManager.default.temporaryDirectory.appendingPathComponent("kerf-link-\(UUID().uuidString)")
-        defer { try? FileManager.default.removeItem(at: home) }
-        let folder = home.appendingPathComponent(".p3code/userdata")
-        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
-        try "488cda2c-env\n".write(to: folder.appendingPathComponent("environment-id"), atomically: true, encoding: .utf8)
-        let database = folder.appendingPathComponent("statev2.sqlite").path
-        let sql = """
-            CREATE TABLE orchestration_v2_projection_provider_threads (provider_thread_id TEXT PRIMARY KEY, thread_id TEXT,
-              updated_at TEXT NOT NULL, payload_json TEXT NOT NULL);
-            INSERT INTO orchestration_v2_projection_provider_threads VALUES
-              ('a', '0bd1bcee-thread', '2026-11-01T11:00:00Z', '{"nativeThreadRef":{"driver":"claudeAgent","nativeId":"e07d33e8-session"}}'),
-              ('b', 'other-thread', '2026-11-01T12:00:00Z', '{"nativeThreadRef":{"driver":"claudeAgent","nativeId":"someone-else"}}');
-            """
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/bin/sqlite3")
-        process.arguments = [database, sql]
-        try process.run()
-        process.waitUntilExit()
-        let link = CodeThreadLink.url(hostPath: "/Applications/P3 Code.app", sessionID: "e07d33e8-session", home: home)
-        #expect(link?.absoluteString == "t3code://threads/488cda2c-env/0bd1bcee-thread")
-        #expect(CodeThreadLink.url(hostPath: "/Applications/P3 Code.app", sessionID: "unknown", home: home) == nil)
-        #expect(CodeThreadLink.url(hostPath: "/System/Applications/Utilities/Terminal.app", sessionID: "e07d33e8-session", home: home) == nil)
-    }
-}

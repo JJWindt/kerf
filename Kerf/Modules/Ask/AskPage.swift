@@ -4,13 +4,11 @@ import SwiftUI
 /// One field like Spotlight on Apple's Mac island: a question goes to Claude, a few words to Google.
 struct AskPage: View {
     @Bindable private var ask = AskModule.shared
-    private let dictation = Dictation.shared
     @FocusState private var focused: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: ui(10)) {
             field
-            if !ask.attachments.isEmpty { attachments }
             if ask.hasAnswer {
                 answer
             } else {
@@ -25,7 +23,7 @@ struct AskPage: View {
 
     static var contentHeight: CGFloat {
         let ask = AskModule.shared
-        let field: CGFloat = 54 + (ask.attachments.isEmpty ? 0 : 38)
+        let field: CGFloat = 54
         if ask.hasAnswer {
             let lines = ask.answer.split(separator: "\n", omittingEmptySubsequences: false)
                 .reduce(0) { $0 + max(1, Int(ceil(Double($1.count) / 58))) }
@@ -56,56 +54,10 @@ struct AskPage: View {
                 .background(.white.opacity(0.14), in: Capsule())
                 .foregroundStyle(.white.opacity(0.8))
                 .help(Text("Tab switches"))
-            Button {
-                dictation.toggle()
-            } label: {
-                Image(systemName: dictation.isListening ? "waveform" : "mic.fill")
-                    .font(.page(14, weight: .semibold))
-                    .foregroundStyle(dictation.isListening ? Color(nsColor: .systemOrange) : .white.opacity(0.7))
-                    .symbolEffect(.variableColor.iterative, isActive: dictation.isListening)
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel(Text("Dictate"))
-            Button {
-                IslandManager.current?.screenshotForAsk()
-            } label: {
-                Image(systemName: "camera.viewfinder").font(.page(14, weight: .semibold)).foregroundStyle(.white.opacity(0.7))
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel(Text("Ask about a screenshot"))
         }
         .padding(.horizontal, ui(14))
         .frame(height: ui(40))
         .background(.white.opacity(0.1), in: Capsule())
-    }
-
-    private var attachments: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: ui(8)) {
-                ForEach(ask.attachments) { attachment in
-                    HStack(spacing: ui(6)) {
-                        Image(systemName: symbol(attachment)).font(.page(11, weight: .semibold))
-                        Text(verbatim: attachment.title).font(.page(12, weight: .medium)).lineLimit(1)
-                        Button { ask.remove(attachment) } label: {
-                            Image(systemName: "xmark").font(.page(9, weight: .bold))
-                        }
-                        .buttonStyle(.plain)
-                        .accessibilityLabel(Text("Remove"))
-                    }
-                    .padding(.horizontal, ui(10))
-                    .frame(height: ui(28))
-                    .background(.white.opacity(0.12), in: Capsule())
-                }
-            }
-        }
-    }
-
-    private func symbol(_ attachment: AskModule.Attachment) -> String {
-        switch attachment.kind {
-        case .file: "doc.fill"
-        case .screenshot: "camera.viewfinder"
-        case .selection: "text.quote"
-        }
     }
 
     private var answer: some View {

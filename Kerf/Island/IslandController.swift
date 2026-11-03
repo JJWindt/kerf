@@ -79,8 +79,7 @@ final class IslandController {
     /// Follows the hub: compact content, the agent dot, the page list.
     func apply(_ hub: Hub) {
         if island.pages != hub.pages { island.pages = hub.pages }
-        let available = hub.pages + hub.morePages
-        if !available.contains(island.page), let first = hub.pages.first { island.select(first) }
+        if !hub.pages.contains(island.page), let first = hub.pages.first { island.select(first) }
         island.show(hub.presentation, agentDot: hub.agentWaiting)
         // The open page may need another height now.
         island.refit()
@@ -91,9 +90,8 @@ final class IslandController {
         hoverTask = nil
         // Only the keyboard keeps it open after the pointer leaves: you are typing in it.
         self.pinned = self.pinned || keyboard
-        // A waiting agent or a thread's notice comes first; otherwise the overview, every time.
-        let overview: IslandPage? = island.pages.contains(.home) || Hub.shared.morePages.contains(.home) ? .home : nil
-        if let page = page ?? Hub.shared.attentionPage ?? overview { island.select(page) }
+        // A waiting agent or a thread's notice comes first; otherwise the AI page, every time.
+        island.select(page ?? Hub.shared.attentionPage ?? .agents)
         island.go(.expanded)
         panel.ignoresMouseEvents = false
         if keyboard {
@@ -106,7 +104,6 @@ final class IslandController {
         closeTask?.cancel()
         closeTask = nil
         pinned = false
-        ShelfModule.shared.showsClipboard = true
         island.go(island.restingMode)
         if panel.isKeyWindow || panel.acceptsKeyboard {
             panel.acceptsKeyboard = false
@@ -123,41 +120,16 @@ final class IslandController {
         let kinds: NSEvent.EventTypeMask = [.mouseMoved, .leftMouseDragged]
         if let global = NSEvent.addGlobalMonitorForEvents(matching: kinds, handler: moved) { monitors.append(global) }
         if let local = NSEvent.addLocalMonitorForEvents(matching: kinds, handler: { moved($0); return $0 }) { monitors.append(local) }
-        // A drag over the notch that ends without a drop closes the drop places again.
-        if let release = NSEvent.addGlobalMonitorForEvents(matching: .leftMouseUp, handler: { [weak self] _ in
-            guard let self, ShelfModule.shared.isDropping, island.mode == .expanded else { return }
-            Task {
-                try? await Task.sleep(for: .seconds(0.3))
-                guard ShelfModule.shared.isDropping else { return }
-                ShelfModule.shared.isDropping = false
-                self.close()
-            }
-        }) { monitors.append(release) }
-        // Escape closes the open island from any app (needs Accessibility, which the HUD asks for).
+        // Escape closes the open island from any app (needs Accessibility).
         if let escape = NSEvent.addGlobalMonitorForEvents(matching: .keyDown, handler: { [weak self] event in
             guard let self, event.keyCode == 53, island.mode == .expanded else { return }
             close()
         }) { monitors.append(escape) }
-        // Scrolling over the island changes the volume.
-        if let scroll = NSEvent.addLocalMonitorForEvents(matching: .scrollWheel, handler: { [weak self] event in
-            guard let self, event.window === panel, island.mode != .expanded else { return event }
-            let direction = event.isDirectionInvertedFromDevice ? -1.0 : 1.0
-            let step = event.hasPreciseScrollingDeltas ? 0.004 : 0.04
-            let level = min(max(SystemVolume.level + event.scrollingDeltaY * direction * step, 0), 1)
-            SystemVolume.level = level
-            Hub.shared.show(.volume, level)
-            return nil
-        }) { monitors.append(scroll) }
     }
 
     /// A text field in the island is being edited.
     private var isTyping: Bool {
         panel.isKeyWindow && panel.firstResponder is NSTextView
-    }
-
-    /// Whether the current drag carries files.
-    private static var dragHasFiles: Bool {
-        NSPasteboard(name: .drag).types?.contains(.fileURL) ?? false
     }
 
     /// The area that counts as "on the island", in screen coordinates.
@@ -183,33 +155,25 @@ final class IslandController {
             guard island.mode != .expanded else { return }
             island.setHovered(true)
             guard hoverTask == nil else { return }
-            // Dragging files to the notch opens it almost at once, on the drop places.
-            let dragging = NSEvent.pressedMouseButtons & 1 != 0 && Self.dragHasFiles
-            let delay = dragging ? 0.15 : UserDefaults.standard.double(forKey: Preferences.hoverOpenDelay)
+            let delay = UserDefaults.standard.double(forKey: Preferences.hoverOpenDelay)
             hoverTask = Task {
                 try? await Task.sleep(for: .seconds(delay))
                 guard !Task.isCancelled else { return }
                 hoverTask = nil
-                if dragging {
-                    ShelfModule.shared.isDropping = true
-                    open(page: .shelf)
-                } else {
-                    open()
-                }
+                open()
             }
         } else {
             hoverTask?.cancel()
             hoverTask = nil
             island.setHovered(false)
             // Leaving the notch makes the island small again, also after clicking in it. It stays
-            // while you type in it, while a drag drops, or when you switched this off.
+            // while you type in it, or when you switched this off.
             guard island.mode == .expanded, closeTask == nil, !pinned, UserDefaults.standard.bool(forKey: Preferences.closesOnLeave),
-                  !isTyping, !ShelfModule.shared.isDropping else { return }
+                  !isTyping else { return }
             closeTask = Task {
                 try? await Task.sleep(for: .seconds(0.4))
                 guard !Task.isCancelled else { return }
                 closeTask = nil
-                ShelfModule.shared.isDropping = false
                 close()
             }
         }

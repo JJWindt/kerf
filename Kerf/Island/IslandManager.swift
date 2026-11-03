@@ -10,7 +10,6 @@ final class IslandManager {
     private var defaultsObserver: NSObjectProtocol?
     private var fullScreenObservers: [NSObjectProtocol] = []
     private var scanTask: Task<Void, Never>?
-    private var occlusionObserver: NSObjectProtocol?
     /// The frontmost app's menu titles from the last look.
     private var menuItems: [CGRect] = []
 
@@ -24,10 +23,6 @@ final class IslandManager {
         }
         defaultsObserver = NotificationCenter.default.addObserver(forName: UserDefaults.didChangeNotification, object: nil, queue: .main) { [weak self] _ in
             MainActor.assumeIsolated { self?.rebuildIfDisplaysChanged() }
-        }
-        occlusionObserver = NotificationCenter.default.addObserver(forName: NSWindow.didChangeOcclusionStateNotification, object: nil,
-                                                                   queue: .main) { [weak self] _ in
-            MainActor.assumeIsolated { self?.updateAudioPause() }
         }
         // Switching spaces or apps may enter or leave full screen; the space animation takes a moment.
         let workspace = NSWorkspace.shared.notificationCenter
@@ -92,13 +87,6 @@ final class IslandManager {
                 controller.island.setMenuRoom(MenuBarRoom.free(notchMinX: range.lowerBound, notchMaxX: range.upperBound, items: items))
             }
         }
-        updateAudioPause()
-    }
-
-    /// Nobody sees the waveform while every island is hidden: an app full screen, a sleeping
-    /// display, the lock screen. Then there's no tap at all.
-    private func updateAudioPause() {
-        AudioLevels.shared.setPaused(controllers.values.allSatisfy { !$0.panel.occlusionState.contains(.visible) })
     }
 
     private func applyHub() {
@@ -118,23 +106,14 @@ final class IslandManager {
         controllers.values.filter { $0.island.mode == .expanded && $0.island.page == .agents }.forEach { $0.close() }
     }
 
-    /// ⌥ Space opens the ask field; ⌥⇧ Space takes the selected text along.
-    func openAsk(sendingSelection: Bool) {
+    /// ⌥ Space opens the ask field, or closes it again.
+    func openAsk() {
         guard let controller = currentController else { return }
-        if sendingSelection {
-            // Read the selection before the island takes the keyboard.
-            guard let text = SelectionReader.selectedText() else { return }
-            AskModule.shared.attachSelection(text)
-        } else if controller.island.mode == .expanded, controller.island.page == .ask {
+        if controller.island.mode == .expanded, controller.island.page == .ask {
             controller.close()
             return
         }
         controller.open(page: .ask, keyboard: true)
-    }
-
-    /// After dropping a file on "Ask Claude": the ask page, ready to type.
-    func showAsk() {
-        currentController?.open(page: .ask, keyboard: true)
     }
 
     func closeAll() {
@@ -144,15 +123,5 @@ final class IslandManager {
     /// Open islands follow their page's height.
     func refit() {
         controllers.values.forEach { $0.island.refit() }
-    }
-
-    /// Closes the island, lets you pick an area, and opens again with the picture attached.
-    func screenshotForAsk() {
-        let controller = currentController
-        closeAll()
-        Screenshot.take(into: KerfPaths.support.appendingPathComponent("Ask", isDirectory: true)) { url in
-            if let url { AskModule.shared.attach([url]) }
-            controller?.open(page: .ask, keyboard: true)
-        }
     }
 }

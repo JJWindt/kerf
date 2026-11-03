@@ -5,7 +5,7 @@ import SwiftUI
 /// or finished unseen, and open pull requests.
 struct AgentsPage: View {
     private let center = AgentCenter.shared
-    private let github = GitHubModule.shared
+    private let github = PullRequests.shared
 
     var body: some View {
         Group {
@@ -44,7 +44,7 @@ struct AgentsPage: View {
             return 204
         }
         let threads = min(center.visibleThreads.count, 4)
-        let pulls = min(GitHubModule.shared.pulls.count, 3)
+        let pulls = min(PullRequests.shared.pulls.count, 3)
         guard threads + pulls > 0 else { return 96 }
         return 22 + (threads > 0 ? 22 + CGFloat(threads) * 46 : 0) + (pulls > 0 ? 22 + CGFloat(pulls) * 38 : 0)
     }
@@ -61,7 +61,7 @@ struct Overview: View {
                 Image(systemName: "apple.intelligence").font(.page(22, weight: .semibold))
                     .foregroundStyle(AgentMark.gradient)
                 Text("No threads running").font(.page(14, weight: .medium)).foregroundStyle(.white.opacity(0.6))
-                Text("Questions from Claude Code and Codex show up here.").font(.page(12)).foregroundStyle(.white.opacity(0.4))
+                Text("Questions from Claude Code and Copilot show up here.").font(.page(12)).foregroundStyle(.white.opacity(0.4))
             }
             .frame(maxWidth: .infinity, minHeight: ui(96))
         } else {
@@ -73,7 +73,7 @@ struct Overview: View {
                 if !pulls.isEmpty {
                     SectionLabel(title: "Pull Requests")
                     ForEach(pulls) { pull in
-                        Button { GitHubModule.shared.open(pull.url) } label: {
+                        Button { PullRequests.shared.open(pull.url) } label: {
                             HStack(spacing: ui(10)) {
                                 Image(systemName: "arrow.triangle.pull").font(.page(13, weight: .semibold))
                                     .foregroundStyle(pull.isDraft == true ? .white.opacity(0.5) : Color(nsColor: .systemGreen))
@@ -162,7 +162,7 @@ struct ThreadRow: View {
     }
 }
 
-/// An AI agent's mark: its own app icon (Claude, Codex) with the app it runs in as a small badge,
+/// An AI agent's mark: its own app icon (Claude) with the app it runs in as a small badge,
 /// or an Apple Intelligence-style tile.
 struct AgentMark: View {
     let agent: AgentKind
@@ -175,7 +175,6 @@ struct AgentMark: View {
 
     private static let agentApps: [AgentKind: [String]] = [
         .claudeCode: ["/Applications/Claude.app"],
-        .codex: ["/Applications/Codex.app", "/Applications/ChatGPT.app"],
     ]
 
     var body: some View {

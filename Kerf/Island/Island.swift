@@ -28,8 +28,8 @@ final class Island {
     private(set) var isHovered = false
     private(set) var presentation: CompactPresentation?
     private(set) var showsAgentDot = false
-    private(set) var page: IslandPage = .home
-    var pages: [IslandPage] = [.home]
+    private(set) var page: IslandPage = .agents
+    var pages: [IslandPage] = [.agents]
     /// Each page's height as last laid out; until then its estimate.
     private var measuredHeights: [IslandPage: CGFloat] = [:]
     @ObservationIgnored var onTap: (() -> Void)?
@@ -98,9 +98,7 @@ final class Island {
                 expandedMounted = false
             }
         }
-        // A level answers a key press: no waiting for the shape.
-        let quick = if case .level = presentation { true } else { false }
-        guard let fadeIn = quick && next == .compact ? .smooth(duration: 0.1) : Motion.fadeIn(to: next, from: previous) else { return }
+        guard let fadeIn = Motion.fadeIn(to: next, from: previous) else { return }
         withAnimation(fadeIn) {
             if next == .compact { compactShown = 1 }
             if next == .expanded { expandedShown = 1 }

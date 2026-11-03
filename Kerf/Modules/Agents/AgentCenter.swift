@@ -3,7 +3,7 @@ import ApplicationServices
 import KerfKit
 import SwiftUI
 
-/// Claude Code, Codex, T3 Code and anything using `kerf notify`: their sessions, and the
+/// Claude Code, Copilot and anything using `kerf notify`: their sessions, and the
 /// questions waiting for you. Only those questions leave a dot in the notch.
 @Observable
 final class AgentCenter {
@@ -30,7 +30,7 @@ final class AgentCenter {
         var needsInput = false
         /// Found running without a hook having said so; the next hook event takes over.
         var foundByScan = false
-        /// The agent's own session id, for finding its chat in P3 or T3 Code.
+        /// The agent's own session id.
         var nativeID: String?
     }
 
@@ -111,17 +111,11 @@ final class AgentCenter {
     func handle(_ envelope: AgentEnvelope, connection: UnixSocketServer.Connection?) {
         let payload = envelope.payload
         if payload["hook_event_name"]?.string == "KerfDebug" {
-            let music = NowPlayingModule.shared
             let report: JSONValue = .object([
-                "nowPlaying": music.state.map { .string("\($0.title) [\($0.isPlaying ? "playing" : "paused")] \($0.sourceBundleID)") } ?? .null,
-                "musicUpdated": music.lastUpdate.map { .string($0.formatted(.iso8601)) } ?? .null,
                 "compact": .string(Hub.shared.presentation.map { $0.kind } ?? "none"),
                 "pages": .string(Hub.shared.pages.map(\.rawValue).joined(separator: ",")),
-                "more": .string(Hub.shared.morePages.map(\.rawValue).joined(separator: ",")),
                 "threads": .number(Double(visibleThreads.count)),
                 "accessibility": .bool(AXIsProcessTrusted()),
-                "mediaKeys": .bool(MediaKeys.shared.isRunning),
-                "mixer": .string(AppMixer.shared.channels.map { "\($0.name) \(Int($0.gain * 100))%\($0.isPlaying ? " playing" : "")" }.joined(separator: ", ")),
                 "waiting": .number(Double(requests.count)),
             ])
             connection?.reply(report.encoded())
@@ -235,24 +229,11 @@ final class AgentCenter {
         Hub.shared.refresh()
     }
 
-    /// The thread's own chat: in P3 or T3 Code the chat itself, elsewhere the app it runs in.
+    /// The app the thread runs in: the terminal or editor.
     func open(_ session: Session) {
         markRead(session.id)
         guard let host = session.hostPath else { return }
-        let native = session.nativeID
-        Task.detached(priority: .userInitiated) {
-            let link = native.flatMap { CodeThreadLink.url(hostPath: host, sessionID: $0) }
-            await MainActor.run {
-                let app = URL(fileURLWithPath: host)
-                let configuration = NSWorkspace.OpenConfiguration()
-                // Straight to that app: T3 Code would take the link otherwise, it has the same scheme.
-                if let link {
-                    NSWorkspace.shared.open([link], withApplicationAt: app, configuration: configuration)
-                } else {
-                    NSWorkspace.shared.openApplication(at: app, configuration: configuration)
-                }
-            }
-        }
+        NSWorkspace.shared.openApplication(at: URL(fileURLWithPath: host), configuration: NSWorkspace.OpenConfiguration())
     }
 
     private func loadTitle(_ sessionID: String, from path: String) {

@@ -71,7 +71,6 @@
 				B00000000000000000000140 /* Sources */,
 				B00000000000000000000130 /* Frameworks */,
 				B00000000000000000000141 /* Resources */,
-				B00000000000000000000142 /* Build MediaRemote adapter */,
 			);
 			buildRules = (
 			);
@@ -134,28 +133,6 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
-/* Begin PBXShellScriptBuildPhase section */
-		B00000000000000000000142 /* Build MediaRemote adapter */ = {
-			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "Build MediaRemote adapter";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"$SRCROOT/scripts/build-adapter.sh\"\n";
-		};
-/* End PBXShellScriptBuildPhase section */
-
 /* Begin PBXSourcesBuildPhase section */
 		B00000000000000000000140 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -172,9 +149,9 @@
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
-				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Manual;
-				DEVELOPMENT_TEAM = VS85X8U52P;
+				DEVELOPMENT_TEAM = "";
 				COPY_PHASE_STRIP = NO;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
@@ -202,9 +179,9 @@
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
-				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Manual;
-				DEVELOPMENT_TEAM = VS85X8U52P;
+				DEVELOPMENT_TEAM = "";
 				COPY_PHASE_STRIP = NO;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
@@ -235,19 +212,10 @@
 				INFOPLIST_KEY_CFBundleDisplayName = Kerf;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_LSUIElement = YES;
-				INFOPLIST_KEY_NSAppleEventsUsageDescription = "Kerf controls music apps and reads render progress from DaVinci Resolve.";
-				INFOPLIST_KEY_NSAudioCaptureUsageDescription = "Kerf moves the waveform in the notch with the music. It only measures loudness; nothing is recorded.";
-				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Kerf shows your AirPods and their battery when they connect.";
-				INFOPLIST_KEY_NSDownloadsFolderUsageDescription = "Kerf shows the progress of your downloads in the notch.";
-				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "Kerf shows your next event and its join link in the notch.";
-				INFOPLIST_KEY_NSCameraUsageDescription = "Kerf shows your camera as a mirror in the notch.";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "© 2026 Paul Boerma";
-				INFOPLIST_KEY_NSLocationUsageDescription = "Kerf shows the weather where you are.";
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Kerf turns what you say into a question for Claude.";
-				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Kerf turns what you say into a question for Claude.";
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks";
 				MARKETING_VERSION = 0.1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = nl.paulboerma.kerf;
+				PRODUCT_BUNDLE_IDENTIFIER = nl.jjwindt.kerf;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -275,19 +243,10 @@
 				INFOPLIST_KEY_CFBundleDisplayName = Kerf;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_LSUIElement = YES;
-				INFOPLIST_KEY_NSAppleEventsUsageDescription = "Kerf controls music apps and reads render progress from DaVinci Resolve.";
-				INFOPLIST_KEY_NSAudioCaptureUsageDescription = "Kerf moves the waveform in the notch with the music. It only measures loudness; nothing is recorded.";
-				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Kerf shows your AirPods and their battery when they connect.";
-				INFOPLIST_KEY_NSDownloadsFolderUsageDescription = "Kerf shows the progress of your downloads in the notch.";
-				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "Kerf shows your next event and its join link in the notch.";
-				INFOPLIST_KEY_NSCameraUsageDescription = "Kerf shows your camera as a mirror in the notch.";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "© 2026 Paul Boerma";
-				INFOPLIST_KEY_NSLocationUsageDescription = "Kerf shows the weather where you are.";
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Kerf turns what you say into a question for Claude.";
-				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Kerf turns what you say into a question for Claude.";
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks";
 				MARKETING_VERSION = 0.1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = nl.paulboerma.kerf;
+				PRODUCT_BUNDLE_IDENTIFIER = nl.jjwindt.kerf;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;

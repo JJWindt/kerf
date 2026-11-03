@@ -8,28 +8,9 @@ import SwiftUI
 final class AskModule {
     static let shared = AskModule()
 
-    struct Attachment: Identifiable, Equatable {
-        enum Kind: Equatable {
-            case file, screenshot
-            case selection(String)
-        }
-
-        let id = UUID()
-        var url: URL?
-        var kind: Kind
-
-        var title: String {
-            switch kind {
-            case .file, .screenshot: url?.lastPathComponent ?? ""
-            case .selection(let text): String(text.prefix(40))
-            }
-        }
-    }
-
     var text = ""
     /// Tab overrides the guess.
     var routeOverride: AskRoute?
-    private(set) var attachments: [Attachment] = []
     private(set) var answer = ""
     private(set) var question = ""
     private(set) var isRunning = false
@@ -39,7 +20,7 @@ final class AskModule {
     @ObservationIgnored private var current: Conversation?
     @ObservationIgnored private var process: Process?
 
-    var route: AskRoute { routeOverride ?? AskRoute.guess(text, hasAttachments: !attachments.isEmpty) }
+    var route: AskRoute { routeOverride ?? AskRoute.guess(text, hasAttachments: false) }
 
     var hasAnswer: Bool { !answer.isEmpty || isRunning || failure != nil }
 
@@ -57,20 +38,6 @@ final class AskModule {
         routeOverride = route == .claude ? .google : .claude
     }
 
-    func attach(_ urls: [URL]) {
-        attachments += urls.map { Attachment(url: $0, kind: .file) }
-        routeOverride = nil
-    }
-
-    func attachSelection(_ text: String) {
-        attachments.removeAll { if case .selection = $0.kind { true } else { false } }
-        attachments.append(Attachment(url: nil, kind: .selection(text)))
-    }
-
-    func remove(_ attachment: Attachment) {
-        attachments.removeAll { $0.id == attachment.id }
-    }
-
     /// Starts over: no answer, no attachments, a fresh Claude session.
     func newConversation() {
         cancel()
@@ -78,7 +45,6 @@ final class AskModule {
         answer = ""
         question = ""
         failure = nil
-        attachments = []
         text = ""
         routeOverride = nil
     }
@@ -93,7 +59,7 @@ final class AskModule {
 
     func submit() {
         let typed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !typed.isEmpty || !attachments.isEmpty else { return }
+        guard !typed.isEmpty else { return }
         if route == .google {
             if let url = AskRoute.googleURL(typed) { NSWorkspace.shared.open(url) }
             text = ""
@@ -117,27 +83,13 @@ final class AskModule {
             return
         }
         cancel()
-        var prompt = typed
-        var folders = Set<String>()
-        for attachment in attachments {
-            switch attachment.kind {
-            case .file, .screenshot:
-                if let url = attachment.url {
-                    prompt += "\n\nAttached: \(url.path)"
-                    folders.insert(url.deletingLastPathComponent().path)
-                }
-            case .selection(let selected):
-                prompt += "\n\nSelected text:\n\"\"\"\n\(selected)\n\"\"\""
-            }
-        }
-        question = typed.isEmpty ? attachments.map(\.title).joined(separator: ", ") : typed
+        let prompt = typed
+        question = typed
         answer = ""
         failure = nil
         usingTool = nil
         isRunning = true
         text = ""
-        let attachmentNames = attachments.map(\.title)
-        attachments = []
         routeOverride = nil
 
         try? FileManager.default.createDirectory(at: Self.workFolder, withIntermediateDirectories: true)
@@ -154,7 +106,6 @@ final class AskModule {
             "You answer inside Kerf, a small panel in the Mac's notch. Answer short and plain, in the language of the question. Use Markdown sparingly: short lists and bold, no headings, no tables.",
         ]
         if let session = current?.session { arguments += ["--resume", session] }
-        if !folders.isEmpty { arguments += ["--add-dir"] + Array(folders) }
         process.arguments = arguments
         var environment = ProcessInfo.processInfo.environment
         environment["PATH"] = "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:" + (environment["PATH"] ?? "")
@@ -162,7 +113,7 @@ final class AskModule {
         let output = Pipe()
         process.standardOutput = output
         process.standardError = FileHandle.nullDevice
-        // The prompt goes in on stdin: --add-dir would take a trailing argument as a folder.
+        // The prompt goes in on stdin, so it never reads as an option.
         let input = Pipe()
         process.standardInput = input
         do {
@@ -176,7 +127,7 @@ final class AskModule {
         }
         self.process = process
         let conversationID = current?.id ?? UUID()
-        current = Conversation(id: conversationID, question: question, answer: "", session: current?.session, attachments: attachmentNames)
+        current = Conversation(id: conversationID, question: question, answer: "", session: current?.session, attachments: [])
         let handle = output.fileHandleForReading
         Task.detached(priority: .userInitiated) {
             for try await line in handle.bytes.lines {

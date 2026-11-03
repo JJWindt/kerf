@@ -1,3 +1,4 @@
+import ApplicationServices
 import SwiftUI
 
 struct SettingsView: View {
@@ -5,8 +6,6 @@ struct SettingsView: View {
         TabView {
             Tab("General", systemImage: "gearshape") { GeneralSettings() }
             Tab("Agents", systemImage: "sparkles") { AgentSettings() }
-            Tab("Offload", systemImage: "sdcard") { OffloadSettings() }
-            Tab("Pages", systemImage: "square.grid.2x2") { PageSettings() }
         }
         .frame(width: 560)
         .scenePadding()
@@ -40,99 +39,39 @@ struct GeneralSettings: View {
                 .fixedSize()
             }
             Toggle("Play sounds", isOn: $playsSounds)
-            HUDSetting()
+            AccessibilitySetting()
             LabeledContent("Open the island", value: "⌥ Space")
-            LabeledContent("Ask Claude about the selection", value: "⌥⇧ Space")
         }
         .formStyle(.grouped)
     }
 }
 
-/// Volume and brightness in the notch instead of macOS's own bar. Needs Accessibility.
-struct HUDSetting: View {
-    @AppStorage(MediaKeys.enabledKey) private var replaces = true
-    @State private var trusted = SelectionReader.isTrusted
+/// Accessibility lets Escape close the island from any app and keeps the island's wings clear of
+/// an app's menus. Everything else works without it.
+struct AccessibilitySetting: View {
+    @State private var trusted = AXIsProcessTrusted()
 
     var body: some View {
-        Toggle(isOn: $replaces) {
-            Text("Show volume and brightness in the notch")
-            if !trusted {
-                Text("Needs Accessibility, also used for asking Claude about selected text.")
-            }
-        }
-        .onChange(of: replaces) { _, on in
-            if on { MediaKeys.shared.start() } else { MediaKeys.shared.stop() }
-        }
         if !trusted {
-            Button("Allow Accessibility…") {
-                SelectionReader.requestTrust()
-                Task {
-                    // Picked up once the switch in System Settings is on.
-                    for _ in 0..<60 {
-                        try? await Task.sleep(for: .seconds(2))
-                        if SelectionReader.isTrusted {
-                            trusted = true
-                            MediaKeys.shared.start()
-                            return
+            LabeledContent {
+                Button("Allow…") {
+                    let prompt = "AXTrustedCheckOptionPrompt"  // kAXTrustedCheckOptionPrompt, which Swift 6 sees as shared state
+                    AXIsProcessTrustedWithOptions([prompt: true] as CFDictionary)
+                    Task {
+                        // Picked up once the switch in System Settings is on.
+                        for _ in 0..<60 {
+                            try? await Task.sleep(for: .seconds(2))
+                            if AXIsProcessTrusted() {
+                                trusted = true
+                                return
+                            }
                         }
                     }
                 }
+            } label: {
+                Text("Accessibility")
+                Text("Lets Escape close the island from any app.")
             }
         }
-    }
-}
-
-/// Which pages the open island has, and the extras that need a permission first.
-struct PageSettings: View {
-    @State private var bluetooth = IOBluetoothWatcher.shared.isAllowed
-
-    var body: some View {
-        Form {
-            Section {
-                ForEach(IslandPage.placeable) { page in
-                    Picker(selection: Binding(
-                        get: { page.placement },
-                        set: {
-                            page.placement = $0
-                            Hub.shared.refresh()
-                        }
-                    )) {
-                        ForEach(PagePlacement.allCases, id: \.self) { Text($0.title).tag($0) }
-                    } label: {
-                        Label { Text(page.title) } icon: { Image(systemName: page.symbol) }
-                    }
-                }
-            } header: {
-                Text("Pages")
-            } footer: {
-                Text("Four icons fit on each side of the notch. The rest goes under …")
-            }
-            Section("Downloads") {
-                Toggle("Show downloads in the notch", isOn: Binding(
-                    get: { UserDefaults.standard.bool(forKey: DownloadsWatcher.enabledKey) },
-                    set: { on in
-                        UserDefaults.standard.set(on, forKey: DownloadsWatcher.enabledKey)
-                        if on { DownloadsWatcher.shared.start() } else { DownloadsWatcher.shared.stop() }
-                    }
-                ))
-            }
-            Section("AirPods") {
-                if bluetooth {
-                    Toggle("Show AirPods when they connect", isOn: Binding(
-                        get: { UserDefaults.standard.object(forKey: IOBluetoothWatcher.enabledKey) as? Bool ?? true },
-                        set: { UserDefaults.standard.set($0, forKey: IOBluetoothWatcher.enabledKey) }
-                    ))
-                } else {
-                    Button("Show AirPods when they connect…") {
-                        IOBluetoothWatcher.shared.requestAccess()
-                        Task {
-                            try? await Task.sleep(for: .seconds(5))
-                            bluetooth = IOBluetoothWatcher.shared.isAllowed
-                        }
-                    }
-                }
-            }
-        }
-        .formStyle(.grouped)
     }
 }

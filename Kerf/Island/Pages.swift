@@ -3,65 +3,21 @@ import SwiftUI
 
 /// The open island's pages. Their icons sit in the band beside the notch.
 enum IslandPage: String, CaseIterable, Identifiable {
-    case home, music, agents, ask, shelf, offload, today, mixer, github, camera, timer, more
+    case agents, ask
 
     var id: String { rawValue }
 
-    /// Pages you place in Settings: in the bar, under "…", or off. Offload comes and goes with a card.
-    static let placeable: [IslandPage] = [.home, .music, .agents, .ask, .shelf, .today, .mixer, .timer, .github, .camera]
-
-    var placement: PagePlacement {
-        get {
-            UserDefaults.standard.string(forKey: "page.\(rawValue).placement").flatMap(PagePlacement.init)
-                ?? ([.timer, .github, .camera].contains(self) ? .more : .bar)
-        }
-        nonmutating set { UserDefaults.standard.set(newValue.rawValue, forKey: "page.\(rawValue).placement") }
-    }
-
-    /// The bar holds four icons on each side of the notch, "…" included; the rest goes under "…".
-    static func arrange(offloadActive: Bool) -> (bar: [IslandPage], more: [IslandPage]) {
-        var bar = placeable.filter { $0.placement == .bar }
-        var more = placeable.filter { $0.placement == .more }
-        if offloadActive { bar.insert(.offload, at: min(bar.count, 4)) }
-        let room = more.isEmpty ? 8 : 7
-        if bar.count > room {
-            more = Array(bar[room...]).filter { $0 != .offload } + more
-            bar = Array(bar.prefix(room))
-        }
-        return (bar + (more.isEmpty ? [] : [.more]), more)
-    }
-
     var symbol: String {
         switch self {
-        case .home: "house"
-        case .music: "music.note"
         case .agents: "apple.intelligence"
         case .ask: "sparkle.magnifyingglass"
-        case .shelf: "tray"
-        case .offload: "sdcard"
-        case .today: "calendar"
-        case .github: "chevron.left.forwardslash.chevron.right"
-        case .camera: "web.camera"
-        case .timer: "timer"
-        case .mixer: "slider.vertical.3"
-        case .more: "ellipsis"
         }
     }
 
     var title: LocalizedStringResource {
         switch self {
-        case .home: "Overview"
-        case .music: "Now Playing"
         case .agents: "AI"
         case .ask: "Ask"
-        case .shelf: "Shelf"
-        case .offload: "Offload"
-        case .today: "Today"
-        case .github: "GitHub"
-        case .camera: "Camera"
-        case .timer: "Timer"
-        case .mixer: "Mixer"
-        case .more: "More"
         }
     }
 
@@ -77,18 +33,8 @@ enum IslandPage: String, CaseIterable, Identifiable {
     /// Height below the band.
     var contentHeight: CGFloat {
         switch self {
-        case .home: HomePage.contentHeight
-        case .music: 154
         case .agents: AgentsPage.contentHeight
         case .ask: AskPage.contentHeight
-        case .shelf: ShelfPage.contentHeight
-        case .offload: OffloadPage.contentHeight
-        case .today: TodayPage.contentHeight
-        case .github: GitHubPage.contentHeight
-        case .camera: CameraPage.contentHeight
-        case .timer: TimerPage.contentHeight
-        case .mixer: MixerPage.contentHeight
-        case .more: MorePage.contentHeight
         }
     }
 }
@@ -98,18 +44,8 @@ struct PageView: View {
 
     var body: some View {
         switch page {
-        case .home: HomePage()
-        case .music: MusicPage()
         case .agents: AgentsPage()
         case .ask: AskPage()
-        case .shelf: ShelfPage()
-        case .offload: OffloadPage()
-        case .today: TodayPage()
-        case .github: GitHubPage()
-        case .camera: CameraPage()
-        case .timer: TimerPage()
-        case .mixer: MixerPage()
-        case .more: MorePage()
         }
     }
 }
@@ -133,7 +69,7 @@ struct TabBand: View {
     }
 
     private func isSelected(_ page: IslandPage) -> Bool {
-        page == island.page || (page == .more && !island.pages.contains(island.page))
+        page == island.page
     }
 
     private func tabs(_ pages: [IslandPage]) -> some View {
@@ -153,148 +89,5 @@ struct TabBand: View {
                 .accessibilityLabel(Text(page.title))
             }
         }
-    }
-}
-
-/// Today: the date, the weather, and the day's events with their call links.
-struct TodayPage: View {
-    private let calendar = CalendarModule.shared
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: ui(8)) {
-            TimelineView(.periodic(from: .now, by: 30)) { context in
-                HStack(spacing: ui(10)) {
-                    Text(context.date, format: .dateTime.weekday(.wide).day().month(.wide)).font(.page(15, weight: .semibold))
-                    Spacer()
-                    if let focus = FocusStatus.current {
-                        Button { FocusStatus.openSettings() } label: {
-                            Label { Text(verbatim: focus) } icon: { Image(systemName: "moon.fill") }
-                                .font(.page(12, weight: .semibold)).foregroundStyle(Color(nsColor: .systemIndigo))
-                        }
-                        .buttonStyle(.plain)
-                    }
-                    weather
-                    Text(context.date, format: .dateTime.hour().minute()).font(.page(15, weight: .medium).monospacedDigit())
-                        .foregroundStyle(.white.opacity(0.6))
-                }
-            }
-            agenda
-        }
-        .foregroundStyle(.white)
-        .padding(.horizontal, ui(20))
-        .padding(.top, ui(6))
-        .onAppear { calendar.refresh() }
-    }
-
-    static var contentHeight: CGFloat {
-        44 + CGFloat(max(CalendarModule.shared.events.count, 1)) * 46
-    }
-
-    @ViewBuilder private var weather: some View {
-        let weather = WeatherModule.shared
-        if let now = weather.now {
-            HStack(spacing: ui(4)) {
-                Image(systemName: now.symbol).symbolRenderingMode(.multicolor)
-                Text(verbatim: "\(Int(now.temperature.rounded()))°")
-                if let rain = now.rainAt {
-                    Text(rain <= .now ? "Rain now" : "Rain at \(rain.formatted(date: .omitted, time: .shortened))")
-                        .foregroundStyle(Color(nsColor: .systemCyan))
-                }
-            }
-            .font(.page(13, weight: .semibold))
-        } else if !weather.isAllowed {
-            Button { weather.requestAccess() } label: {
-                Image(systemName: "cloud.sun").font(.page(13, weight: .semibold)).foregroundStyle(.white.opacity(0.6))
-            }
-            .buttonStyle(.plain)
-            .help(Text("Show the weather"))
-        }
-    }
-
-    @ViewBuilder private var agenda: some View {
-        if !calendar.hasAccess {
-            Button { calendar.requestAccess() } label: {
-                HStack(spacing: ui(10)) {
-                    Image(systemName: "calendar.badge.plus").font(.page(15, weight: .semibold))
-                    Text("Show your calendar").font(.page(14, weight: .medium))
-                    Spacer()
-                }
-                .frame(height: ui(40))
-                .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-        } else if calendar.events.isEmpty {
-            Text("Nothing in your calendar today").font(.page(14)).foregroundStyle(.white.opacity(0.55)).frame(height: ui(40))
-        } else {
-            TimelineView(.periodic(from: .now, by: 30)) { context in
-                let next = calendar.next(at: context.date)
-                VStack(alignment: .leading, spacing: ui(2)) {
-                    ForEach(calendar.events) { event in
-                        row(event, isNext: event.id == next?.id, now: context.date)
-                    }
-                }
-            }
-        }
-    }
-
-    /// One event; what's over is dimmed, the one on now or next gets its call button.
-    private func row(_ event: CalendarModule.Event, isNext: Bool, now: Date) -> some View {
-        HStack(spacing: ui(10)) {
-            Capsule().fill(event.color).frame(width: ui(4), height: ui(32))
-            VStack(alignment: .leading, spacing: ui(2)) {
-                Text(verbatim: event.title).font(.page(14, weight: .semibold)).lineLimit(1)
-                Text(event.when(now: now)).font(.page(12)).foregroundStyle(.white.opacity(0.6)).lineLimit(1)
-            }
-            Spacer()
-            if isNext, event.joinURL != nil {
-                IslandButton(title: "Join", role: .primary) { calendar.join(event) }.frame(width: ui(96))
-            }
-        }
-        .frame(height: ui(42))
-        .opacity(event.end <= now ? 0.4 : 1)
-        .contentShape(Rectangle())
-        .onTapGesture { calendar.openInCalendar() }
-    }
-}
-
-enum PagePlacement: String, CaseIterable {
-    case bar, more, off
-
-    var title: LocalizedStringResource {
-        switch self {
-        case .bar: "In the bar"
-        case .more: "Under …"
-        case .off: "Off"
-        }
-    }
-}
-
-/// "…": the pages that don't sit in the bar, as tiles like Control Center's.
-struct MorePage: View {
-    @Environment(Island.self) private var island
-
-    var body: some View {
-        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: ui(10)), count: 3), spacing: ui(10)) {
-            ForEach(Hub.shared.morePages) { page in
-                Button { island.select(page) } label: {
-                    VStack(spacing: ui(6)) {
-                        Image(systemName: page.symbol).font(.page(20, weight: .semibold))
-                        Text(page.title).font(.page(12, weight: .semibold))
-                    }
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity, minHeight: ui(68))
-                    .background(.white.opacity(0.1), in: RoundedRectangle(cornerRadius: ui(16), style: .continuous))
-                    .contentShape(RoundedRectangle(cornerRadius: ui(16), style: .continuous))
-                }
-                .buttonStyle(.plain)
-            }
-        }
-        .padding(.horizontal, ui(20))
-        .padding(.top, ui(6))
-    }
-
-    static var contentHeight: CGFloat {
-        let rows = (Hub.shared.morePages.count + 2) / 3
-        return CGFloat(max(rows, 1)) * 78 + 14
     }
 }

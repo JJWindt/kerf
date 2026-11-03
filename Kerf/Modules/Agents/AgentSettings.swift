@@ -1,7 +1,7 @@
 import KerfKit
 import SwiftUI
 
-/// Connects Claude Code, Codex and Copilot: shows exactly what changes in their config, keeps a
+/// Connects Claude Code and Copilot: shows exactly what changes in their config, keeps a
 /// backup, and only then writes. Apps that run these agents (T3 Code, an editor) come along.
 struct AgentSettings: View {
     @AppStorage(AgentCenter.showsDoneKey) private var showsDone = true
@@ -73,14 +73,13 @@ struct AgentSettings: View {
 }
 
 enum HookTarget: String, CaseIterable, Identifiable {
-    case claudeCode, codex, copilot
+    case claudeCode, copilot
 
     var id: String { rawValue }
 
     var agent: AgentKind {
         switch self {
         case .claudeCode: .claudeCode
-        case .codex: .codex
         case .copilot: .copilot
         }
     }
@@ -91,7 +90,6 @@ enum HookTarget: String, CaseIterable, Identifiable {
         let home = FileManager.default.homeDirectoryForCurrentUser
         return switch self {
         case .claudeCode: home.appendingPathComponent(".claude/settings.json")
-        case .codex: home.appendingPathComponent(".codex/hooks.json")
         // Copilot reads every file in this folder: Kerf's own, so Copilot's stay untouched.
         case .copilot: home.appendingPathComponent(".copilot/hooks/kerf.json")
         }
@@ -165,9 +163,6 @@ struct DiffSheet: View {
             }
             .frame(height: 260)
             .background(.quaternary.opacity(0.5), in: RoundedRectangle(cornerRadius: 8))
-            if change.install, change.target == .codex {
-                Text("Then open Codex and type /hooks to trust Kerf's hooks.").foregroundStyle(.secondary)
-            }
             HStack {
                 Spacer()
                 Button("Cancel") { dismiss() }
