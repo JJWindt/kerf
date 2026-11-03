@@ -14,6 +14,7 @@ enum CommandLineTool {
       kerf answer allow|always|deny   answers the first waiting question
       kerf log on|off|show|clear      keeps every hook payload in a local file, to see what
                                       a tool sends
+      kerf open ID                    opens a thread as a click would (IDs in kerf debug)
       kerf debug                      what the running app sees
       kerf version
     """
@@ -43,6 +44,14 @@ enum CommandLineTool {
             return UnixSocket.send(line, to: KerfPaths.socket, waitForReply: false, timeout: 1) == nil ? 2 : 0
         case "log":
             return log(arguments.count > 2 ? arguments[2] : "show")
+        case "open":
+            guard arguments.count > 2 else {
+                print(usage)
+                return 64
+            }
+            let envelope = AgentEnvelope(agent: .other, payload: .object(["hook_event_name": "KerfOpen", "thread": .string(arguments[2])]))
+            guard let line = try? JSONEncoder().encode(envelope) else { return 2 }
+            return UnixSocket.send(line, to: KerfPaths.socket, waitForReply: false, timeout: 1) == nil ? 2 : 0
         case "debug":
             let envelope = AgentEnvelope(agent: .other, payload: .object(["hook_event_name": "KerfDebug"]))
             guard let line = try? JSONEncoder().encode(envelope),
@@ -77,7 +86,7 @@ enum CommandLineTool {
         record(agent: name, event: event, payload: payload)
         if agent == .copilot { payload = CopilotPayload.normalized(payload, event: event) }
         let host = ProcessTree.hostApp()
-        let envelope = AgentEnvelope(agent: agent, host: host?.bundlePath, payload: payload)
+        let envelope = AgentEnvelope(agent: agent, host: host?.bundlePath, payload: payload, tty: ProcessTree.terminal())
         guard let line = try? JSONEncoder().encode(envelope) else { return 0 }
         guard envelope.waitsForReply else {
             _ = UnixSocket.send(line, to: KerfPaths.socket, waitForReply: false, timeout: 1)

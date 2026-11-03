@@ -30,12 +30,15 @@ public struct AgentEnvelope: Codable, Equatable, Sendable {
     public var payload: JSONValue
     /// `kerf notify`: a name for tools Kerf doesn't know.
     public var name: String?
+    /// The terminal the tool runs in, as `/dev/ttys003`: picks the right tab when you open the thread.
+    public var tty: String?
 
-    public init(agent: AgentKind, host: String? = nil, payload: JSONValue, name: String? = nil) {
+    public init(agent: AgentKind, host: String? = nil, payload: JSONValue, name: String? = nil, tty: String? = nil) {
         self.agent = agent
         self.host = host
         self.payload = payload
         self.name = name
+        self.tty = tty
     }
 
     /// Whether the tool waits for your answer.
