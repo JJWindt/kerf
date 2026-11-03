@@ -319,3 +319,11 @@ struct CodeThreadLinkTests {
         #expect(CodeThreadLink.url(hostPath: "/System/Applications/Utilities/Terminal.app", sessionID: "e07d33e8-session", home: home) == nil)
     }
 }
+
+struct StopFailureTests {
+    @Test func failures() {
+        #expect(AgentEvent(.object(["hook_event_name": "StopFailure", "error": "rate_limit", "error_details": "429 Too Many Requests"]))
+            == .stopFailed(error: "rate_limit", details: "429 Too Many Requests"))
+        #expect(AgentEvent(.object(["hook_event_name": "StopFailure"])) == .stopFailed(error: "unknown", details: nil))
+    }
+}

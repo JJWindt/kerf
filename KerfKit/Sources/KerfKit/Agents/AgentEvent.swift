@@ -32,6 +32,8 @@ public enum AgentEvent: Equatable, Sendable {
     case question([AgentQuestion], raw: JSONValue)
     case notification(type: String?, message: String?)
     case stop(lastMessage: String?)
+    /// The turn ended on an API error: `rate_limit`, `overloaded`, `server_error` and the like.
+    case stopFailed(error: String, details: String?)
     case sessionStart
     case sessionEnd
     case promptSubmitted(String?)
@@ -49,6 +51,8 @@ public enum AgentEvent: Equatable, Sendable {
             self = .notification(type: payload["notification_type"]?.string, message: payload["message"]?.string)
         case "Stop":
             self = .stop(lastMessage: payload["last_assistant_message"]?.string)
+        case "StopFailure":
+            self = .stopFailed(error: payload["error"]?.string ?? "unknown", details: payload["error_details"]?.string)
         case "SessionStart": self = .sessionStart
         case "SessionEnd": self = .sessionEnd
         case "UserPromptSubmit": self = .promptSubmitted(payload["prompt"]?.string)

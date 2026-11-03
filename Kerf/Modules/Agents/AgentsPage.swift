@@ -135,10 +135,24 @@ struct ThreadRow: View {
     }
 
     private var stateText: String {
-        switch session.state {
+        if let failure = session.failure { return String(localized: "Stopped: \(Self.failureText(failure))") }
+        return switch session.state {
         case .working: String(localized: "Working")
         case .waiting: String(localized: "Waiting for you")
         case .idle: String(localized: "Done")
+        }
+    }
+
+    /// Claude Code's StopFailure `error`, in words.
+    static func failureText(_ error: String) -> String {
+        switch error {
+        case "rate_limit": String(localized: "rate limit reached")
+        case "overloaded": String(localized: "Claude is overloaded")
+        case "server_error": String(localized: "server error")
+        case "max_output_tokens": String(localized: "answer too long")
+        case "authentication_failed", "oauth_org_not_allowed", "cloud_credential_error": String(localized: "sign-in problem")
+        case "billing_error", "account_on_hold": String(localized: "account problem")
+        default: String(localized: "API error")
         }
     }
 
@@ -149,6 +163,10 @@ struct ThreadRow: View {
                 .symbolEffect(.variableColor.iterative, isActive: true)
         case .waiting:
             AgentDot()
+        case .idle where session.failure != nil:
+            Image(systemName: "exclamationmark.triangle.fill").font(.page(13, weight: .semibold))
+                .foregroundStyle(Color(nsColor: .systemRed))
+                .accessibilityLabel(Text("Stopped on an error"))
         case .idle:
             Circle().fill(Color(nsColor: .systemBlue)).frame(width: ui(8), height: ui(8))
                 .accessibilityLabel(Text("Unread"))
