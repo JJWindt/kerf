@@ -162,8 +162,8 @@ struct ThreadRow: View {
     }
 }
 
-/// An AI agent's mark: its own app icon (Claude, Codex) with the app it runs in as a small badge,
-/// or an Apple Intelligence-style tile.
+/// An AI agent's mark: its own app icon (Claude, Codex), GitHub's Copilot mark, or an Apple
+/// Intelligence-style tile, with the app it runs in as a small badge.
 struct AgentMark: View {
     let agent: AgentKind
     let hostPath: String?
@@ -204,6 +204,12 @@ struct AgentMark: View {
     @ViewBuilder private var mark: some View {
         if let agentApp {
             Image(nsImage: NSWorkspace.shared.icon(forFile: agentApp)).resizable()
+        } else if agent == .copilot {
+            RoundedRectangle(cornerRadius: size * 0.27, style: .continuous)
+                .fill(Color(white: 0.13))
+                .overlay {
+                    Image("Copilot").resizable().scaledToFit().foregroundStyle(.white).padding(size * 0.2)
+                }
         } else {
             RoundedRectangle(cornerRadius: size * 0.27, style: .continuous)
                 .fill(Self.gradient)
