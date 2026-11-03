@@ -115,6 +115,14 @@ struct HookInstallerTests {
         #expect(!HookInstaller.isCurrent(in: nil, agent: .claudeCode))
     }
 
+    @Test func vsCodeQuestionsOnlyWait() {
+        let payload: JSONValue = .object(["hook_event_name": "PreToolUse", "tool_name": "vscode_askQuestions", "tool_input": .object([
+            "questions": .array([.object(["header": "Stap 1", "question": "Mag stap 1 door?", "options": .array([.object(["label": "Ja"])])])]),
+        ])])
+        #expect(AgentEvent(payload) == .askedInApp(tool: "vscode_askQuestions"))
+        #expect(!AgentEnvelope(agent: .copilot, payload: payload).waitsForReply)
+    }
+
     @Test func toolsFinishing() {
         #expect(AgentEvent(.object(["hook_event_name": "PostToolUse", "tool_name": "Bash"])) == .toolFinished(tool: "Bash"))
         #expect(AgentEvent(.object(["hook_event_name": "PostToolUseFailure", "tool_name": "Edit"])) == .toolFinished(tool: "Edit"))
@@ -272,7 +280,7 @@ struct CopilotTests {
         let root = try OrderedJSON.parse(text)
         #expect(root["version"] == .number("1"))
         let permission = try #require(root["hooks"]?["PermissionRequest"]?.arrayValue?.first)
-        #expect(permission["bash"]?.stringValue == #""$HOME/Library/Application Support/Kerf/bin/kerf" hook copilot PermissionRequest"#)
+        #expect(permission["bash"]?.stringValue == #""$HOME/Library/Application Support/Kerf/bin/kerf" hook copilot PermissionRequest || true"#)
         #expect(permission["timeoutSec"] == .number("600"))
         #expect(root["hooks"]?["Stop"]?.arrayValue?.first?["timeoutSec"] == .number("10"))
         #expect(HookInstaller.isCopilotFile(text))
