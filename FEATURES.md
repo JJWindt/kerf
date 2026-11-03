@@ -63,6 +63,7 @@ git checkout upstream/main -- Kerf/Modules/Music
 | Waiting dot that stays: orange while any thread is blocked on you (a permission or a question), with the count when more than one, until that thread moves on (a tool runs, it stops, you prompt again, it ends). Answering in the terminal or a hook timing out no longer clears it. | `AgentCenter.waitingSessions`, `Hub.waitingCount`, `Compact.swift` (`AgentDot`), `PostToolUse`/`PostToolUseFailure` hooks in `HookInstaller` |
 | "Update…" in Settings → Agents when the installed hooks are older than this version's | `HookInstaller.isCurrent`, `AgentSettings.swift` |
 | Copilot threads show GitHub's Copilot mark instead of the generic tile | `AgentMark` in `AgentsPage.swift`, `Assets.xcassets/Copilot.imageset` |
+| A finished thread makes no sound unless you turn it on (Settings → Agents) | `AgentCenter.soundsDoneKey`, `AgentSettings.swift` |
 | The island stays in the MacBook's notch; floating islands on other displays are off by default | `Preferences.swift`, `IslandManager.currentController` |
 
 ## Wishlist

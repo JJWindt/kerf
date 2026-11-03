@@ -51,6 +51,8 @@ final class AgentCenter {
     @ObservationIgnored private var server: UnixSocketServer?
 
     static let showsDoneKey = "agents.showsDone"
+    /// Off by default: a finished thread shows its tick without a sound.
+    static let soundsDoneKey = "agents.soundsDone"
 
     func start() {
         let files = FileManager.default
@@ -186,6 +188,7 @@ final class AgentCenter {
             session.unread = true
             session.needsInput = false
             session.lastMessage = last.map { String($0.prefix(300)) }
+            if Self.showsDone, UserDefaults.standard.bool(forKey: Self.soundsDoneKey) { Sounds.play(.done) }
         case .sessionEnd:
             connection?.reply(nil)
             sessions.removeAll { $0.id == sessionID }
@@ -307,17 +310,16 @@ final class AgentCenter {
     }
 }
 
-/// Soft system sounds, and only if you want sounds. Only a question makes one: a finished
-/// thread shows its tick without a sound.
+/// Soft system sounds, and only if you want sounds.
 enum Sounds {
     enum Kind {
-        case question
+        case question, done
     }
 
     static func play(_ kind: Kind) {
         guard UserDefaults.standard.bool(forKey: Preferences.playsSounds) else { return }
-        let sound = NSSound(named: "Tink")
-        sound?.volume = 0.35
+        let sound = NSSound(named: kind == .question ? "Tink" : "Pop")
+        sound?.volume = kind == .question ? 0.35 : 0.25
         sound?.play()
     }
 }
