@@ -36,7 +36,7 @@ enum IslandPage: String, CaseIterable, Identifiable {
         case .home: "house"
         case .music: "music.note"
         case .agents: "apple.intelligence"
-        case .ask: "sparkle.magnifyingglass"
+        case .ask: "sparkle"
         case .shelf: "tray"
         case .offload: "sdcard"
         case .today: "calendar"
