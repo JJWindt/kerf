@@ -65,4 +65,5 @@ real data (scenes in `Kerf/Island/Lab.swift`).
 
 ## License
 
-MIT, like upstream. Original work © 2026 Paul Boerma.
+MIT, like upstream. Original work © 2026 Paul Boerma. The Copilot mark is GitHub's, from
+[Primer Octicons](https://github.com/primer/octicons) (MIT).
