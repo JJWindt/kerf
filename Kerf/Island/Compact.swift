@@ -2,7 +2,7 @@ import KerfKit
 import SwiftUI
 
 /// What the compact island shows, one thing on each side of the notch like the iPhone's leading
-/// and trailing views. Modules add cases. Everything fits the same wings as the volume: the island
+/// and trailing views. Everything fits the same wings beside the notch: the island
 /// has two sizes, compact and open, and never grows for what it shows.
 enum CompactPresentation: Equatable {
     /// A short message, one thing on each side. Transient.
@@ -34,17 +34,14 @@ enum CompactPresentation: Equatable {
     }
 }
 
-/// One side of a banner. Words don't fit beside the notch: a symbol, a few characters, or an
-/// agent's mark.
+/// One side of a banner. Words don't fit beside the notch: a symbol or an agent's mark.
 enum BannerSide: Equatable {
     case symbol(String, Color)
-    case value(String)
     case agent(AgentKind)
 
     var id: String {
         switch self {
         case .symbol(let name, _): name
-        case .value(let text): text
         case .agent(let agent): agent.rawValue
         }
     }
@@ -57,9 +54,6 @@ struct BannerSideView: View {
         switch side {
         case .symbol(let name, let tint):
             Image(systemName: name).font(.system(size: 14, weight: .semibold)).foregroundStyle(tint)
-        case .value(let text):
-            Text(verbatim: text).font(.system(size: 12, weight: .semibold).monospacedDigit()).foregroundStyle(.white)
-                .lineLimit(1).minimumScaleFactor(0.7)
         case .agent(let agent):
             AgentMark(agent: agent, hostPath: nil, size: 18)
         }

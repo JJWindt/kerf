@@ -5,7 +5,7 @@ enum CommandLineTool {
     static let usage = """
     kerf: talk to the Kerf notch app
 
-      kerf hook claude-code|codex|copilot [EVENT]
+      kerf hook claude-code|copilot [EVENT]
                                       for hooks: reads the hook's JSON on stdin
       kerf notify [--agent NAME] [--title TITLE] MESSAGE
                                       a short message in the notch

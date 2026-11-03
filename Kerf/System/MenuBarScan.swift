@@ -26,7 +26,7 @@ nonisolated struct MenuBarScan: Sendable {
         menuItems = readMenus ? front.map(Self.menuTitles) : nil
     }
 
-    /// Menu titles through Accessibility, which Kerf has for the volume keys. Without it: none.
+    /// Menu titles through Accessibility, which Kerf has for Escape. Without it: none.
     private static func menuTitles(of pid: pid_t) -> [CGRect] {
         guard AXIsProcessTrusted() else { return [] }
         let app = AXUIElementCreateApplication(pid)

@@ -20,7 +20,7 @@ final class AskModule {
     @ObservationIgnored private var current: Conversation?
     @ObservationIgnored private var process: Process?
 
-    var route: AskRoute { routeOverride ?? AskRoute.guess(text, hasAttachments: false) }
+    var route: AskRoute { routeOverride ?? AskRoute.guess(text) }
 
     var hasAnswer: Bool { !answer.isEmpty || isRunning || failure != nil }
 
@@ -38,7 +38,7 @@ final class AskModule {
         routeOverride = route == .claude ? .google : .claude
     }
 
-    /// Starts over: no answer, no attachments, a fresh Claude session.
+    /// Starts over: no answer, a fresh Claude session.
     func newConversation() {
         cancel()
         current = nil
@@ -127,7 +127,7 @@ final class AskModule {
         }
         self.process = process
         let conversationID = current?.id ?? UUID()
-        current = Conversation(id: conversationID, question: question, answer: "", session: current?.session, attachments: [])
+        current = Conversation(id: conversationID, question: question, answer: "", session: current?.session)
         let handle = output.fileHandleForReading
         Task.detached(priority: .userInitiated) {
             for try await line in handle.bytes.lines {

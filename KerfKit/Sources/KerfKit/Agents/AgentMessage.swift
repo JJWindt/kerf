@@ -3,14 +3,12 @@ import Foundation
 /// The coding tools Kerf knows by name. Anything else comes in through `kerf notify`.
 public enum AgentKind: String, Codable, Sendable, CaseIterable {
     case claudeCode = "claude-code"
-    case codex
     case copilot
     case other
 
     public var displayName: String {
         switch self {
         case .claudeCode: "Claude Code"
-        case .codex: "Codex"
         case .copilot: "Copilot"
         case .other: "Agent"
         }
@@ -24,7 +22,7 @@ public enum AgentKind: String, Codable, Sendable, CaseIterable {
 public struct AgentEnvelope: Codable, Equatable, Sendable {
     public var version = 1
     public var agent: AgentKind
-    /// The app the tool runs in, from the process tree: "T3 Code", "Terminal", "Visual Studio Code".
+    /// The app the tool runs in, from the process tree: "Claude", "Terminal", "Visual Studio Code".
     public var host: String?
     /// The hook's own JSON, as the tool sent it.
     public var payload: JSONValue

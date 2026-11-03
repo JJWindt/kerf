@@ -1,7 +1,7 @@
 import Foundation
 
 /// JSON that keeps its key order and number spelling, so editing someone's settings file changes
-/// only what we touch. Prints like `JSON.stringify(value, null, 2)`, as Claude Code and Codex write.
+/// only what we touch. Prints like `JSON.stringify(value, null, 2)`, as Claude Code writes.
 public indirect enum OrderedJSON: Equatable, Sendable {
     public struct Member: Equatable, Sendable {
         public var key: String

@@ -1,59 +1,68 @@
-# Kerf
+# Kerf (agentic fork)
 
-A Dynamic Island for the MacBook notch, built to look and move like Apple's own island.
+A Dynamic Island for the MacBook notch, for agentic coding. Your Claude Code sessions live in the
+notch: what runs, what's done, and what waits for you.
+
+A fork of [paultje1900/kerf](https://github.com/paultje1900/kerf), narrowed down to coding agents.
+See [FEATURES.md](FEATURES.md) for what this fork keeps and what it left out.
 
 <p>
-  <img src="Design/home.png" width="410" alt="The open island: what plays, and the rest of today">
+  <img src="Design/permission.png" width="410" alt="Claude Code asks permission in the notch">
   <img src="Design/question.png" width="410" alt="Claude Code asks a question in the notch">
 </p>
 
-- **Music**: whatever plays (Music, Spotify, podcasts) in Apple Music's island card. Scroll over the notch for volume.
-- **Agents**: Claude Code, Codex and Copilot ask for permission or answers in the notch, in full, wherever they run (Terminal, an editor, T3 Code). An orange dot stays until you answer. Any other tool can use `kerf notify`.
-- **Ask**: ⌥ Space. A question goes to Claude through your own Claude Code, a few words to Google. ⌥⇧ Space asks about the selected text. Drop files or take a screenshot to ask about them; speak instead of typing.
-- **Offload**: put in a camera card, click Offload, pick the drive and the project. Every file is copied, checked with xxHash64, and skipped if the project already has it.
-- **Shelf**: drop files on the notch; they stay 24 hours. AirDrop, share, show in Finder, and a clipboard history.
-- **Today**: your calendar with a join button for calls, the weather and rain, timers.
-- **GitHub**: pull requests, CI, issues and a repo's files, through `gh`.
-- **Camera** mirror, **volume and brightness** in the notch, AirPods and charging, downloads, DaVinci Resolve renders.
+- **Permissions**: Allow, Always or Deny a tool call from the notch. You can still answer in the terminal; whichever comes first wins.
+- **Questions**: Claude's multiple-choice questions (AskUserQuestion) as buttons, with a field for another answer.
+- **Threads**: every Claude Code session, working, waiting or done, with its project. A click opens the app it runs in.
+- **Done notices**: a tick in the notch when a session finishes, until you look.
+- **Pull requests**: your open PRs under the threads, through `gh`.
+- **Ask**: ⌥ Space. A question goes to Claude through your own Claude Code, a few words to Google.
+- **Copilot** works too, and any script can use `kerf notify`.
 
 ## Install
 
+No admin rights or Apple developer account needed. With Xcode 27 installed:
+
 ```bash
-brew install --cask paultje1900/tap/kerf
+scripts/install.sh
 ```
 
-Needs macOS 26 (Tahoe). Kerf is signed and notarized by Apple. It opens at login and lives in the notch; on a display without a notch it floats at the top.
-
-Update with `brew upgrade --cask kerf`. To remove it, first press Disconnect in Settings → Agents, then `brew uninstall --cask kerf` (add `--zap` to remove its settings too).
+It builds a Release copy, puts it in `~/Applications` and starts it. Kerf opens at login from there.
+macOS 26 (Tahoe) on a Mac with a notch.
 
 ## First steps
 
-1. **Settings → Agents → Connect** Claude Code, Codex and Copilot. Kerf shows the exact change to their config first and keeps a backup; Copilot gets its own file in `~/.copilot/hooks`. For Codex, type `/hooks` once to trust them.
-2. **Settings → General → Allow Accessibility**: volume and brightness in the notch, and ⌥⇧ Space for selected text.
-3. **Today**: tap the calendar and weather buttons once. Downloads and AirPods are off until you switch them on in Settings → Pages.
-4. **Ask** uses [Claude Code](https://claude.com/claude-code) (`claude`, signed in); **GitHub** uses the [GitHub CLI](https://cli.github.com) (`gh auth login`).
-5. **DaVinci Resolve**: Preferences → General → External scripting using: Local.
+1. **Settings → Agents → Connect** Claude Code (and Copilot if you use it). Kerf shows the exact change to `~/.claude/settings.json` first and keeps a backup.
+2. **Settings → General → Accessibility** (optional): lets Escape close the island from any app.
+3. **Pull requests** need the [GitHub CLI](https://cli.github.com), signed in with `gh auth login`.
+
+To remove Kerf, press Disconnect in Settings → Agents first, then delete `~/Applications/Kerf.app`.
+
+## The `kerf` command
+
+```bash
+K="$HOME/Library/Application Support/Kerf/bin/kerf"
+"$K" notify --agent Build "Tests pass"            # a short message in the notch
+"$K" notify --ask --title Deploy "Push to main?"   # waits: exit 0 allowed, 1 declined, 2 no answer
+"$K" debug                                         # what the running app sees
+```
 
 ## Privacy
 
-Kerf has no server and no account. Everything stays on your Mac, except:
-
-- the weather: your approximate location goes to [Open-Meteo](https://open-meteo.com);
-- what you ask Claude goes through your own Claude Code, and GitHub through your own `gh`;
-- a search opens Google in your browser.
+Kerf has no server and no account. Everything stays on your Mac, except what you ask Claude (through
+your own Claude Code), your pull requests (through your own `gh`), and a search, which opens Google in
+your browser.
 
 ## Build from source
 
 ```bash
-xcodebuild -project Kerf.xcodeproj -scheme Kerf build
+xcodebuild -project Kerf.xcodeproj -scheme Kerf -configuration Debug -derivedDataPath build/DerivedData build
 cd KerfKit && swift test
-scripts/install.sh   # Release build into /Applications
 ```
 
-macOS 26, Xcode 27, Swift 6. `Kerf --lab shot <scene> <file.png>` saves a frame of any state without real data (scenes in `Kerf/Island/Lab.swift`).
-
-Releases: raise `MARKETING_VERSION`, then `scripts/release.sh --publish` archives, signs with Developer ID, notarizes, publishes the GitHub release and updates the cask in [paultje1900/homebrew-tap](https://github.com/paultje1900/homebrew-tap).
+macOS 26, Xcode 27, Swift 6. `Kerf --lab shot <scene> <file.png>` saves a frame of any state without
+real data (scenes in `Kerf/Island/Lab.swift`).
 
 ## License
 
-MIT. Third-party: [mediaremote-adapter](https://github.com/ungive/mediaremote-adapter) (BSD 3-Clause), vendored in `Vendor/`.
+MIT, like upstream. Original work © 2026 Paul Boerma.

@@ -25,7 +25,8 @@ struct AgentEventTests {
         let event = AgentEvent(permission)
         let allow = try #require(HookOutput.json(for: event, reply: .init(decision: .allow), agent: .claudeCode))
         #expect(String(decoding: allow, as: UTF8.self) == #"{"hookSpecificOutput":{"decision":{"behavior":"allow"},"hookEventName":"PermissionRequest"}}"#)
-        let deny = try #require(HookOutput.json(for: event, reply: .init(decision: .deny), agent: .codex))
+        let deny = try #require(HookOutput.json(for: event, reply: .init(decision: .deny), agent: .copilot))
+        #expect(JSONValue.parse(deny)?["behavior"]?.string == "deny")
         #expect(JSONValue.parse(deny)?["hookSpecificOutput"]?["decision"]?["behavior"]?.string == "deny")
         #expect(JSONValue.parse(deny)?["hookSpecificOutput"]?["decision"]?["message"]?.string != nil)
         let always = try #require(HookOutput.json(for: event, reply: .init(decision: .always), agent: .claudeCode))
@@ -101,10 +102,10 @@ struct HookInstallerTests {
     }
 
     @Test func startsANewFile() throws {
-        let file = try HookInstaller.install(into: nil, agent: .codex)
-        #expect(HookInstaller.isInstalled(in: file, agent: .codex))
-        #expect(!HookInstaller.isInstalled(in: file, agent: .claudeCode))
-        #expect(try HookInstaller.remove(from: file, agent: .codex) == "{}\n")
+        let file = try HookInstaller.install(into: nil, agent: .claudeCode)
+        #expect(HookInstaller.isInstalled(in: file, agent: .claudeCode))
+        #expect(!HookInstaller.isInstalled(in: file, agent: .copilot))
+        #expect(try HookInstaller.remove(from: file, agent: .claudeCode) == "{}\n")
     }
 
     @Test func keepsEscapesAndNumbers() throws {
@@ -186,8 +187,6 @@ struct AgentDetailsTests {
         {"type":"user","message":{"role":"user","content":[{"type":"text","text":"Make the notch app"}]}}
         """.utf8)
         #expect(ThreadTitle.fromTranscript(transcript) == "Make the notch app")
-        let codex = Data(#"{"type":"response_item","payload":{"type":"message","role":"user","content":[{"type":"input_text","text":"Review the PR"}]}}"#.utf8)
-        #expect(ThreadTitle.fromTranscript(codex) == "Review the PR")
     }
 
     @Test func projectNames() throws {

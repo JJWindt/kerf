@@ -25,7 +25,7 @@ git checkout upstream/main -- Kerf/Modules/Music
 | Jump to the session's app (terminal, editor) | `AgentCenter.open` |
 | Find sessions already running at launch | `KerfKit/Agents/RunningThreads.swift` |
 | `kerf notify` / `kerf answer` / `kerf debug` CLI | `App/CommandLineTool.swift` |
-| Open pull requests on the AI page (via `gh`) | `AgentsPage.swift`, PR fetching from `Modules/GitHub/GitHubModule.swift` |
+| Open pull requests on the AI page (via `gh`) | `AgentsPage.swift`, `Modules/Agents/PullRequests.swift` |
 | Hook installer for Claude Code and GitHub Copilot | `Modules/Agents/AgentSettings.swift`, `KerfKit/Agents/HookInstaller.swift` |
 | Ask (⌥ Space): a question to Claude Code, a few words to Google | `Modules/Ask/AskModule.swift`, `AskPage.swift` |
 | Settings: open at login, close on leave, hover delay, sounds | `App/SettingsView.swift`, `App/Preferences.swift` |

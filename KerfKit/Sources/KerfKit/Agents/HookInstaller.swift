@@ -1,6 +1,6 @@
 import Foundation
 
-/// Adds Kerf's hooks to Claude Code's ~/.claude/settings.json or Codex's ~/.codex/hooks.json,
+/// Adds Kerf's hooks to Claude Code's ~/.claude/settings.json,
 /// and takes them out again, touching nothing else in the file. Copilot gets a file of its own.
 public enum HookInstaller {
     public struct Hook: Equatable, Sendable {
@@ -24,14 +24,6 @@ public enum HookInstaller {
                 Hook(event: "PermissionRequest", matcher: nil, timeout: 600),
                 Hook(event: "PreToolUse", matcher: "AskUserQuestion", timeout: 600),
                 Hook(event: "Notification", matcher: nil, timeout: 10),
-                Hook(event: "Stop", matcher: nil, timeout: 10),
-                Hook(event: "SessionStart", matcher: nil, timeout: 10),
-                Hook(event: "SessionEnd", matcher: nil, timeout: 10),
-                Hook(event: "UserPromptSubmit", matcher: nil, timeout: 10),
-            ]
-        case .codex:
-            [
-                Hook(event: "PermissionRequest", matcher: nil, timeout: 600),
                 Hook(event: "Stop", matcher: nil, timeout: 10),
                 Hook(event: "SessionStart", matcher: nil, timeout: 10),
                 Hook(event: "SessionEnd", matcher: nil, timeout: 10),

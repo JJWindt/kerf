@@ -13,7 +13,7 @@ public enum KerfPaths {
     public static var commandLink: URL { support.appendingPathComponent("bin/kerf") }
 }
 
-/// Which app a hook runs in, from the process tree: T3 Code, Terminal, Visual Studio Code.
+/// Which app a hook runs in, from the process tree: Claude, Terminal, Visual Studio Code.
 public enum ProcessTree {
     public struct App: Equatable, Sendable {
         public var name: String

@@ -1,98 +1,6 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "%@ free" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ vrij"
-          }
-        }
-      }
-    },
-    "%@ left" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "nog %@"
-          }
-        }
-      }
-    },
-    "%@/s" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@/s"
-          }
-        }
-      }
-    },
-    "%lld didn't match the card. Copy them again." : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld kwamen niet overeen met de kaart. Kopieer ze opnieuw."
-          }
-        }
-      }
-    },
-    "%lld files copied and checked" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld bestanden gekopieerd en gecontroleerd"
-          }
-        }
-      }
-    },
-    "%lld files · %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$lld files · %2$@"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld bestanden · %@"
-          }
-        }
-      }
-    },
-    "%lld of %lld" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$lld of %2$lld"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld van %lld"
-          }
-        }
-      }
-    },
-    "%lld were already in the project" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld stonden al in het project"
-          }
-        }
-      }
-    },
     "0.25 seconds" : {
       "localizations" : {
         "nl" : {
@@ -143,16 +51,6 @@
         }
       }
     },
-    "Agents" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Agents"
-          }
-        }
-      }
-    },
     "AI" : {
       "localizations" : {
         "nl" : {
@@ -163,22 +61,22 @@
         }
       }
     },
-    "AirDrop" : {
+    "Accessibility" : {
       "localizations" : {
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "AirDrop"
+            "value" : "Toegankelijkheid"
           }
         }
       }
     },
-    "AirPods" : {
+    "Agents" : {
       "localizations" : {
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "AirPods"
+            "value" : "Agents"
           }
         }
       }
@@ -193,22 +91,12 @@
         }
       }
     },
-    "Allow Accessibility…" : {
+    "Allow…" : {
       "localizations" : {
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Toegankelijkheid toestaan…"
-          }
-        }
-      }
-    },
-    "Also create" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Maak ook"
+            "value" : "Sta toe…"
           }
         }
       }
@@ -243,62 +131,12 @@
         }
       }
     },
-    "Apps that play sound show up here, each with its own volume." : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Apps die geluid maken verschijnen hier, elk met een eigen volume."
-          }
-        }
-      }
-    },
     "Ask" : {
       "localizations" : {
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Vragen"
-          }
-        }
-      }
-    },
-    "Ask a follow-up" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Stel een vervolgvraag"
-          }
-        }
-      }
-    },
-    "Ask about a screenshot" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Vraag over een screenshot"
-          }
-        }
-      }
-    },
-    "Ask Claude" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Vraag Claude"
-          }
-        }
-      }
-    },
-    "Ask Claude about the selection" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Vraag Claude over de selectie"
           }
         }
       }
@@ -313,6 +151,16 @@
         }
       }
     },
+    "Ask a follow-up" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stel een vervolgvraag"
+          }
+        }
+      }
+    },
     "Ask in %@" : {
       "localizations" : {
         "nl" : {
@@ -323,92 +171,12 @@
         }
       }
     },
-    "Audio" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Geluid"
-          }
-        }
-      }
-    },
-    "Back" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Terug"
-          }
-        }
-      }
-    },
-    "Branches" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Branches"
-          }
-        }
-      }
-    },
-    "Brightness" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Helderheid"
-          }
-        }
-      }
-    },
-    "Camera" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Camera"
-          }
-        }
-      }
-    },
     "Cancel" : {
       "localizations" : {
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Annuleer"
-          }
-        }
-      }
-    },
-    "Card folders" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kaartmappen"
-          }
-        }
-      }
-    },
-    "Choose a drive" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kies een schijf"
-          }
-        }
-      }
-    },
-    "CI" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "CI"
           }
         }
       }
@@ -429,16 +197,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Claude kon geen antwoord geven."
-          }
-        }
-      }
-    },
-    "Clipboard" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Klembord"
           }
         }
       }
@@ -473,16 +231,6 @@
         }
       }
     },
-    "Connect your SSD." : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sluit je SSD aan."
-          }
-        }
-      }
-    },
     "Connected" : {
       "localizations" : {
         "nl" : {
@@ -513,26 +261,6 @@
         }
       }
     },
-    "Copy something and it shows up here." : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kopieer iets en het verschijnt hier."
-          }
-        }
-      }
-    },
-    "Copying and checking" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kopiëren en controleren"
-          }
-        }
-      }
-    },
     "Couldn't change the file" : {
       "localizations" : {
         "nl" : {
@@ -549,16 +277,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Weigeren"
-          }
-        }
-      }
-    },
-    "Dictate" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dicteer"
           }
         }
       }
@@ -583,52 +301,12 @@
         }
       }
     },
-    "Do Not Disturb" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Niet storen"
-          }
-        }
-      }
-    },
     "Done" : {
       "localizations" : {
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Klaar"
-          }
-        }
-      }
-    },
-    "Downloads" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Downloads"
-          }
-        }
-      }
-    },
-    "Driving" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Rijden"
-          }
-        }
-      }
-    },
-    "Drop files on the notch" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sleep bestanden naar de notch"
           }
         }
       }
@@ -643,178 +321,12 @@
         }
       }
     },
-    "Ends at %@" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Klaar om %@"
-          }
-        }
-      }
-    },
-    "Every file is checked against the card with xxHash64. Files already in the project are skipped. Kerf never writes to the card." : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Elk bestand wordt met xxHash64 tegen de kaart gecontroleerd. Wat al in het project staat, wordt overgeslagen. Kerf schrijft nooit naar de kaart."
-          }
-        }
-      }
-    },
-    "Files" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bestanden"
-          }
-        }
-      }
-    },
-    "Folders" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mappen"
-          }
-        }
-      }
-    },
-    "Footage" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Beelden"
-          }
-        }
-      }
-    },
-    "Four icons fit on each side of the notch. The rest goes under …" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Er passen vier iconen aan elke kant van de notch. De rest komt onder …"
-          }
-        }
-      }
-    },
     "General" : {
       "localizations" : {
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Algemeen"
-          }
-        }
-      }
-    },
-    "Threads to look at: %lld" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Threads om te bekijken: %lld"
-          }
-        }
-      }
-    },
-    "gh isn't signed in. Run gh auth login in Terminal." : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "gh is niet ingelogd. Voer gh auth login uit in Terminal."
-          }
-        }
-      }
-    },
-    "GitHub" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "GitHub"
-          }
-        }
-      }
-    },
-    "hour" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "uur"
-          }
-        }
-      }
-    },
-    "In %lld min · %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "In %1$lld min · %2$@"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Over %lld min · %@"
-          }
-        }
-      }
-    },
-    "In the bar" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "In de balk"
-          }
-        }
-      }
-    },
-    "Install the GitHub CLI (gh) and sign in." : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Installeer de GitHub CLI (gh) en log in."
-          }
-        }
-      }
-    },
-    "Issues" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Issues"
-          }
-        }
-      }
-    },
-    "Join" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Deelnemen"
-          }
-        }
-      }
-    },
-    "Keep" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bewaren"
           }
         }
       }
@@ -839,42 +351,12 @@
         }
       }
     },
-    "min" : {
+    "Lets Escape close the island from any app." : {
       "localizations" : {
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "min"
-          }
-        }
-      }
-    },
-    "Mixer" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mixer"
-          }
-        }
-      }
-    },
-    "More" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Meer"
-          }
-        }
-      }
-    },
-    "Needs Accessibility, also used for asking Claude about selected text." : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Heeft Toegankelijkheid nodig, ook voor vragen over geselecteerde tekst."
+            "value" : "Hiermee sluit Escape het eiland vanuit elke app."
           }
         }
       }
@@ -885,56 +367,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nieuw"
-          }
-        }
-      }
-    },
-    "Next" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Volgende"
-          }
-        }
-      }
-    },
-    "No commits yet" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nog geen commits"
-          }
-        }
-      }
-    },
-    "No issues for you" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Geen issues voor jou"
-          }
-        }
-      }
-    },
-    "No open pull requests" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Geen open pull requests"
-          }
-        }
-      }
-    },
-    "No recent CI runs" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Geen recente CI-runs"
           }
         }
       }
@@ -959,72 +391,12 @@
         }
       }
     },
-    "Not Now" : {
+    "OK" : {
       "localizations" : {
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Niet nu"
-          }
-        }
-      }
-    },
-    "Nothing else today" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Niets meer vandaag"
-          }
-        }
-      }
-    },
-    "Nothing in your calendar today" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Niets in je agenda vandaag"
-          }
-        }
-      }
-    },
-    "Nothing is playing" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Er speelt niets"
-          }
-        }
-      }
-    },
-    "Now Playing" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Speelt nu"
-          }
-        }
-      }
-    },
-    "Now, until %@" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nu, tot %@"
-          }
-        }
-      }
-    },
-    "Off" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Uit"
+            "value" : "OK"
           }
         }
       }
@@ -1035,26 +407,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Uit: het eiland blijft open tot je Esc drukt of op de notch klikt."
-          }
-        }
-      }
-    },
-    "Offload" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Uitladen"
-          }
-        }
-      }
-    },
-    "OK" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "OK"
           }
         }
       }
@@ -1089,16 +441,6 @@
         }
       }
     },
-    "Open the app that plays" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Open de app die speelt"
-          }
-        }
-      }
-    },
     "Open the island" : {
       "localizations" : {
         "nl" : {
@@ -1119,82 +461,12 @@
         }
       }
     },
-    "Other time, like 7m30" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Andere tijd, bijv. 7m30"
-          }
-        }
-      }
-    },
     "Other tools" : {
       "localizations" : {
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Andere programma's"
-          }
-        }
-      }
-    },
-    "Overview" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Overzicht"
-          }
-        }
-      }
-    },
-    "Pages" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pagina's"
-          }
-        }
-      }
-    },
-    "Pause" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pauze"
-          }
-        }
-      }
-    },
-    "Paused" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gepauzeerd"
-          }
-        }
-      }
-    },
-    "Personal" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Persoonlijk"
-          }
-        }
-      }
-    },
-    "Play" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Speel"
           }
         }
       }
@@ -1209,56 +481,6 @@
         }
       }
     },
-    "Previous" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Vorige"
-          }
-        }
-      }
-    },
-    "Project name" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Projectnaam"
-          }
-        }
-      }
-    },
-    "Project on %@" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Project op %@"
-          }
-        }
-      }
-    },
-    "Projects folder" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Projectenmap"
-          }
-        }
-      }
-    },
-    "PRs" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PR's"
-          }
-        }
-      }
-    },
     "Pull Requests" : {
       "localizations" : {
         "nl" : {
@@ -1269,12 +491,12 @@
         }
       }
     },
-    "Questions from Claude Code and Codex show up here." : {
+    "Questions from Claude Code and Copilot show up here." : {
       "localizations" : {
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vragen van Claude Code en Codex verschijnen hier."
+            "value" : "Vragen van Claude Code en Copilot verschijnen hier."
           }
         }
       }
@@ -1299,62 +521,12 @@
         }
       }
     },
-    "Rain at %@" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Regen om %@"
-          }
-        }
-      }
-    },
-    "Rain now" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nu regen"
-          }
-        }
-      }
-    },
     "Read a file" : {
       "localizations" : {
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Een bestand lezen"
-          }
-        }
-      }
-    },
-    "Remove" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Verwijder"
-          }
-        }
-      }
-    },
-    "Remove from Shelf" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Uit de bak halen"
-          }
-        }
-      }
-    },
-    "Resume" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hervat"
           }
         }
       }
@@ -1389,76 +561,6 @@
         }
       }
     },
-    "Share" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Deel"
-          }
-        }
-      }
-    },
-    "Shelf" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bak"
-          }
-        }
-      }
-    },
-    "Show AirPods when they connect" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Toon AirPods als ze verbinden"
-          }
-        }
-      }
-    },
-    "Show AirPods when they connect…" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Toon AirPods als ze verbinden…"
-          }
-        }
-      }
-    },
-    "Show Camera" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Toon camera"
-          }
-        }
-      }
-    },
-    "Show downloads in the notch" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Toon downloads in de notch"
-          }
-        }
-      }
-    },
-    "Show in Finder" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Toon in Finder"
-          }
-        }
-      }
-    },
     "Show on displays without a notch" : {
       "localizations" : {
         "nl" : {
@@ -1469,72 +571,12 @@
         }
       }
     },
-    "Show the weather" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Toon het weer"
-          }
-        }
-      }
-    },
-    "Show volume and brightness in the notch" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Toon volume en helderheid in de notch"
-          }
-        }
-      }
-    },
     "Show when an agent is done" : {
       "localizations" : {
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Meld als een agent klaar is"
-          }
-        }
-      }
-    },
-    "Show your calendar" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Toon je agenda"
-          }
-        }
-      }
-    },
-    "Sleep" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Slaap"
-          }
-        }
-      }
-    },
-    "Start" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Start"
-          }
-        }
-      }
-    },
-    "Starting…" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bezig met starten…"
           }
         }
       }
@@ -1559,42 +601,12 @@
         }
       }
     },
-    "The copy stopped" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Het kopiëren is gestopt"
-          }
-        }
-      }
-    },
-    "Then open Codex and type /hooks to trust Kerf's hooks." : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Open daarna Codex en typ /hooks om de hooks van Kerf te vertrouwen."
-          }
-        }
-      }
-    },
     "These lines change in %@. A backup goes next to it." : {
       "localizations" : {
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Deze regels veranderen in %@. Er komt een backup naast."
-          }
-        }
-      }
-    },
-    "They stay here for 24 hours." : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ze blijven hier 24 uur."
           }
         }
       }
@@ -1619,32 +631,12 @@
         }
       }
     },
-    "Timer" : {
+    "Threads to look at: %lld" : {
       "localizations" : {
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Timer"
-          }
-        }
-      }
-    },
-    "Today" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Vandaag"
-          }
-        }
-      }
-    },
-    "Under …" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Onder …"
+            "value" : "Threads om te bekijken: %lld"
           }
         }
       }
@@ -1659,26 +651,6 @@
         }
       }
     },
-    "Up" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Omhoog"
-          }
-        }
-      }
-    },
-    "Use" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gebruik"
-          }
-        }
-      }
-    },
     "Use %@" : {
       "localizations" : {
         "nl" : {
@@ -1689,32 +661,12 @@
         }
       }
     },
-    "Use the Defaults" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gebruik de standaard"
-          }
-        }
-      }
-    },
     "Using %@…" : {
       "localizations" : {
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Gebruikt %@…"
-          }
-        }
-      }
-    },
-    "Volume" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Volume"
           }
         }
       }
@@ -1735,16 +687,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Wil verder"
-          }
-        }
-      }
-    },
-    "Work" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Werk"
           }
         }
       }

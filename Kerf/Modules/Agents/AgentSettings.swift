@@ -2,7 +2,7 @@ import KerfKit
 import SwiftUI
 
 /// Connects Claude Code and Copilot: shows exactly what changes in their config, keeps a
-/// backup, and only then writes. Apps that run these agents (T3 Code, an editor) come along.
+/// backup, and only then writes. Apps that run these agents (Claude, a terminal, an editor) come along.
 struct AgentSettings: View {
     @AppStorage(AgentCenter.showsDoneKey) private var showsDone = true
     @State private var change: HookChange?

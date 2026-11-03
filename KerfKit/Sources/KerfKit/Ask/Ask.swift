@@ -13,11 +13,10 @@ public enum AskRoute: String, Codable, Sendable {
         "leg", "schrijf", "maak", "geef", "vertel", "vat", "vertaal", "help", "verbeter", "herschrijf", "vergelijk",
     ]
 
-    /// A question, an instruction, a long line or anything with attachments goes to Claude.
-    /// Two or three words go to Google.
-    public static func guess(_ text: String, hasAttachments: Bool = false) -> AskRoute {
+    /// A question, an instruction or a long line goes to Claude. Two or three words go to Google.
+    public static func guess(_ text: String) -> AskRoute {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        if hasAttachments || trimmed.hasSuffix("?") { return .claude }
+        if trimmed.hasSuffix("?") { return .claude }
         let words = trimmed.lowercased().split(whereSeparator: { $0.isWhitespace || $0 == "," })
         guard let first = words.first else { return .claude }
         if questionWords.contains(String(first)) { return .claude }
@@ -66,15 +65,14 @@ public struct Conversation: Codable, Identifiable, Equatable, Sendable {
     public var answer: String
     public var session: String?
     public var date: Date
-    public var attachments: [String]
 
-    public init(id: UUID = UUID(), question: String, answer: String, session: String?, date: Date = .now, attachments: [String] = []) {
+    /// Older histories also have `attachments`; decoding skips it.
+    public init(id: UUID = UUID(), question: String, answer: String, session: String?, date: Date = .now) {
         self.id = id
         self.question = question
         self.answer = answer
         self.session = session
         self.date = date
-        self.attachments = attachments
     }
 
     /// Newest first, at most `limit`, a conversation updated in place.

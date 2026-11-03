@@ -10,7 +10,6 @@ struct AskTests {
         #expect(AskRoute.guess("Why is the sky blue") == .claude)
         #expect(AskRoute.guess("fx3 firmware?") == .claude)
         #expect(AskRoute.guess("beste kleurprofiel voor trouwfilms bij weinig licht") == .claude)
-        #expect(AskRoute.guess("logo", hasAttachments: true) == .claude)
         #expect(AskRoute.googleURL("a b&c")?.absoluteString == "https://www.google.com/search?q=a%20b%26c")
     }
 

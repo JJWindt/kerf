@@ -25,7 +25,7 @@ public struct AgentQuestion: Equatable, Sendable, Identifiable {
     }
 }
 
-/// What a hook payload means, for Claude Code and Codex alike.
+/// What a hook payload means, for Claude Code and Copilot alike.
 public enum AgentEvent: Equatable, Sendable {
     case permission(tool: String, input: JSONValue, suggestions: [JSONValue])
     /// AskUserQuestion, caught before it shows. `raw` is echoed back with the answers.
@@ -98,7 +98,7 @@ public enum ThreadTitle {
         return line.count > 80 ? String(line.prefix(79)) + "…" : line
     }
 
-    /// The first prompt in a Claude Code or Codex transcript (JSON lines).
+    /// The first prompt in a Claude Code transcript (JSON lines).
     public static func fromTranscript(_ data: Data) -> String? {
         for line in data.split(separator: 0x0A).prefix(400) {
             guard let json = JSONValue.parse(Data(line)) else { continue }
@@ -107,11 +107,6 @@ public enum ThreadTitle {
                 if let text = content.string ?? content.array?.compactMap({ $0["text"]?.string }).first, let title = from(prompt: text) {
                     return title
                 }
-            }
-            // Codex: {"type":"response_item","payload":{"type":"message","role":"user","content":[{"text":"…"}]}}
-            if let payload = json["payload"], payload["role"]?.string == "user",
-               let text = payload["content"]?.array?.compactMap({ $0["text"]?.string }).first, let title = from(prompt: text) {
-                return title
             }
         }
         return nil

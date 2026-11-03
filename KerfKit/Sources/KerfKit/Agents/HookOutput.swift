@@ -1,6 +1,6 @@
 import Foundation
 
-/// What `kerf hook` prints so Claude Code or Codex acts on your answer. Their formats match.
+/// What `kerf hook` prints so Claude Code or Copilot acts on your answer.
 public enum HookOutput {
     /// Nil prints nothing: the tool carries on as if Kerf weren't there.
     public static func json(for event: AgentEvent, reply: AgentReply, agent: AgentKind) -> Data? {
