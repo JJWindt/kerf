@@ -93,11 +93,10 @@ final class IslandManager {
         controllers.values.forEach { $0.apply(Hub.shared) }
     }
 
-    /// The island on the screen under the pointer, else the notched one.
+    /// The island in the MacBook's notch; only without one, the island under the pointer.
     private var currentController: IslandController? {
-        let mouse = NSEvent.mouseLocation
-        return controllers.values.first { $0.screen.frame.contains(mouse) }
-            ?? controllers.values.first { $0.screen.notchSize != nil }
+        controllers.values.first { $0.screen.notchSize != nil }
+            ?? controllers.values.first { $0.screen.frame.contains(NSEvent.mouseLocation) }
             ?? controllers.values.first
     }
 
