@@ -32,6 +32,8 @@ final class AgentCenter {
         var foundByScan = false
         /// The agent's own session id, for finding its chat in P3 or T3 Code.
         var nativeID: String?
+        /// Subagents running for this thread, by their id.
+        var subagents: Set<String> = []
     }
 
     struct Request: Identifiable {
@@ -169,13 +171,21 @@ final class AgentCenter {
                 session.needsInput = true
                 session.unread = true
             }
-        case .stop(let last):
+        case .stop(let last, let subagentsRunning):
             connection?.reply(nil)
             session.state = .idle
             session.unread = true
             session.needsInput = false
             session.lastMessage = last.map { String($0.prefix(300)) }
+            // Only background subagents outlive the turn.
+            if !subagentsRunning { session.subagents = [] }
             if Self.showsDone { Sounds.play(.done) }
+        case .subagentStarted(let id):
+            connection?.reply(nil)
+            if !id.isEmpty { session.subagents.insert(id) }
+        case .subagentStopped(let id):
+            connection?.reply(nil)
+            session.subagents.remove(id)
         case .sessionEnd:
             connection?.reply(nil)
             sessions.removeAll { $0.id == sessionID }

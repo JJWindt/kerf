@@ -189,7 +189,7 @@ struct Lab {
     }
 
     static var sampleSessions: [AgentCenter.Session] {
-        [
+        var sessions: [AgentCenter.Session] = [
             .init(id: "1", agent: .claudeCode, name: "Claude Code", hostPath: t3, project: "kerf", state: .working, updated: .now,
                   lastMessage: nil, title: "Make the timer its own tab", unread: false),
             .init(id: "2", agent: .claudeCode, name: "Claude Code", hostPath: "/System/Applications/Utilities/Terminal.app", project: "atlas",
@@ -197,6 +197,8 @@ struct Lab {
             .init(id: "3", agent: .codex, name: "Codex", hostPath: t3, project: "tempo", state: .waiting, updated: .now,
                   lastMessage: nil, title: "Review the weekly summary", unread: false),
         ]
+        sessions[0].subagents = ["a", "b"]
+        return sessions
     }
 
     static func previewPulls() {

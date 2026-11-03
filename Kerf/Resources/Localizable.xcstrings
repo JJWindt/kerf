@@ -83,6 +83,16 @@
         }
       }
     },
+    "%lld subagents" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld subagents"
+          }
+        }
+      }
+    },
     "%lld were already in the project" : {
       "localizations" : {
         "nl" : {
@@ -129,6 +139,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "1 seconde"
+          }
+        }
+      }
+    },
+    "1 subagent" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 subagent"
           }
         }
       }

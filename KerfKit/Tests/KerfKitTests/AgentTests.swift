@@ -319,3 +319,13 @@ struct CodeThreadLinkTests {
         #expect(CodeThreadLink.url(hostPath: "/System/Applications/Utilities/Terminal.app", sessionID: "e07d33e8-session", home: home) == nil)
     }
 }
+
+struct SubagentTests {
+    @Test func subagents() {
+        #expect(AgentEvent(.object(["hook_event_name": "SubagentStart", "agent_id": "a1", "agent_type": "Explore"])) == .subagentStarted(id: "a1"))
+        #expect(AgentEvent(.object(["hook_event_name": "SubagentStop", "agent_id": "a1"])) == .subagentStopped(id: "a1"))
+        #expect(AgentEvent(.object(["hook_event_name": "Stop", "background_tasks": .array([])])) == .stop(lastMessage: nil, subagentsRunning: false))
+        #expect(AgentEvent(.object(["hook_event_name": "Stop", "background_tasks": .array([.object(["id": "t1", "type": "subagent"])])]))
+            == .stop(lastMessage: nil, subagentsRunning: true))
+    }
+}

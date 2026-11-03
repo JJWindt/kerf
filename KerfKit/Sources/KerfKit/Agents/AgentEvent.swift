@@ -31,7 +31,10 @@ public enum AgentEvent: Equatable, Sendable {
     /// AskUserQuestion, caught before it shows. `raw` is echoed back with the answers.
     case question([AgentQuestion], raw: JSONValue)
     case notification(type: String?, message: String?)
-    case stop(lastMessage: String?)
+    /// The turn ended. Background subagents may still run and wake the thread again.
+    case stop(lastMessage: String?, subagentsRunning: Bool)
+    case subagentStarted(id: String)
+    case subagentStopped(id: String)
     case sessionStart
     case sessionEnd
     case promptSubmitted(String?)
@@ -48,7 +51,12 @@ public enum AgentEvent: Equatable, Sendable {
         case "Notification":
             self = .notification(type: payload["notification_type"]?.string, message: payload["message"]?.string)
         case "Stop":
-            self = .stop(lastMessage: payload["last_assistant_message"]?.string)
+            let running = (payload["background_tasks"]?.array ?? []).contains { $0["type"]?.string == "subagent" }
+            self = .stop(lastMessage: payload["last_assistant_message"]?.string, subagentsRunning: running)
+        case "SubagentStart":
+            self = .subagentStarted(id: payload["agent_id"]?.string ?? "")
+        case "SubagentStop":
+            self = .subagentStopped(id: payload["agent_id"]?.string ?? "")
         case "SessionStart": self = .sessionStart
         case "SessionEnd": self = .sessionEnd
         case "UserPromptSubmit": self = .promptSubmitted(payload["prompt"]?.string)

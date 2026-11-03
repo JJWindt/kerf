@@ -122,7 +122,7 @@ struct ThreadRow: View {
                 AgentMark(agent: session.agent, hostPath: session.hostPath, size: ui(30))
                 VStack(alignment: .leading, spacing: ui(1)) {
                     Text(verbatim: session.title ?? session.project ?? session.name).font(.page(14, weight: .semibold)).lineLimit(1)
-                    Text(verbatim: [stateText, session.project].compactMap { $0 }.joined(separator: " · "))
+                    Text(verbatim: [stateText, subagentsText, session.project].compactMap { $0 }.joined(separator: " · "))
                         .font(.page(12)).foregroundStyle(.white.opacity(0.5)).lineLimit(1)
                 }
                 Spacer()
@@ -132,6 +132,13 @@ struct ThreadRow: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+    }
+
+    /// "2 subagents" while the thread runs them.
+    private var subagentsText: String? {
+        let count = session.subagents.count
+        guard session.state != .idle, count > 0 else { return nil }
+        return count == 1 ? String(localized: "1 subagent") : String(localized: "\(count) subagents")
     }
 
     private var stateText: String {
