@@ -63,6 +63,7 @@ final class AgentCenter {
     @ObservationIgnored private var server: UnixSocketServer?
 
     static let showsDoneKey = "agents.showsDone"
+    static let soundsDoneKey = "agents.soundsDone"
 
     func start() {
         let files = FileManager.default
@@ -242,7 +243,7 @@ final class AgentCenter {
             session.lastMessage = last.map { String($0.prefix(300)) }
             // Only background subagents outlive the turn.
             if !subagentsRunning { session.subagents = [] }
-            if Self.showsDone { Sounds.play(.done) }
+            if Self.showsDone, UserDefaults.standard.object(forKey: Self.soundsDoneKey) as? Bool ?? true { Sounds.play(.done) }
         case .stopFailed(let error, _):
             connection?.reply(nil)
             // Not done: it stopped on an error and waits for you to pick it up. Stays in the notch.

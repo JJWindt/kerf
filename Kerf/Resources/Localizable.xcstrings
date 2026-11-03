@@ -833,6 +833,16 @@
         }
       }
     },
+    "Play a sound when an agent is done" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Speel een geluid af als een agent klaar is"
+          }
+        }
+      }
+    },
     "rate limit reached" : {
       "localizations" : {
         "nl" : {
