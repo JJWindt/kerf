@@ -51,6 +51,7 @@ final class AgentCenter {
     @ObservationIgnored private var server: UnixSocketServer?
 
     static let showsDoneKey = "agents.showsDone"
+    static let soundsDoneKey = "agents.soundsDone"
 
     func start() {
         let files = FileManager.default
@@ -175,7 +176,7 @@ final class AgentCenter {
             session.unread = true
             session.needsInput = false
             session.lastMessage = last.map { String($0.prefix(300)) }
-            if Self.showsDone { Sounds.play(.done) }
+            if Self.showsDone, UserDefaults.standard.object(forKey: Self.soundsDoneKey) as? Bool ?? true { Sounds.play(.done) }
         case .sessionEnd:
             connection?.reply(nil)
             sessions.removeAll { $0.id == sessionID }

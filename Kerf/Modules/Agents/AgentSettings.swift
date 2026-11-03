@@ -5,6 +5,8 @@ import SwiftUI
 /// backup, and only then writes. Apps that run these agents (T3 Code, an editor) come along.
 struct AgentSettings: View {
     @AppStorage(AgentCenter.showsDoneKey) private var showsDone = true
+    @AppStorage(AgentCenter.soundsDoneKey) private var soundsDone = true
+    @AppStorage(Preferences.playsSounds) private var playsSounds = true
     @State private var change: HookChange?
     @State private var refresh = 0
     @State private var error: String?
@@ -43,6 +45,8 @@ struct AgentSettings: View {
 
             Section {
                 Toggle("Show when an agent is done", isOn: $showsDone)
+                Toggle("Play a sound when an agent is done", isOn: $soundsDone)
+                    .disabled(!showsDone || !playsSounds)
             }
         }
         .formStyle(.grouped)
