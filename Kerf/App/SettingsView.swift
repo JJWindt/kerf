@@ -14,7 +14,7 @@ struct SettingsView: View {
 }
 
 struct GeneralSettings: View {
-    @AppStorage(Preferences.showOnExternalDisplays) private var showOnExternalDisplays = true
+    @AppStorage(Preferences.showOnExternalDisplays) private var showOnExternalDisplays = false
     @AppStorage(Preferences.hoverOpenDelay) private var hoverOpenDelay = 0.25
     @AppStorage(Preferences.playsSounds) private var playsSounds = true
     @AppStorage(Preferences.closesOnLeave) private var closesOnLeave = true
