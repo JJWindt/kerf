@@ -46,8 +46,14 @@ struct Lab {
     /// Scenes for `shot`: set up an island, then it settles for a second and a half.
     static let scenes: [String: @MainActor (IslandController) -> Void] = [
         "idle": { _ in },
-        "banner": { $0.island.show(.banner(.symbol("battery.100percent.bolt", .green), .value("80%")), agentDot: false) },
-        "dot": { $0.island.show(nil, agentDot: true) },
+        "banner": { $0.island.show(.banner(.symbol("battery.100percent.bolt", .green), .value("80%")), waiting: 0) },
+        "dot": { $0.island.show(nil, waiting: 1) },
+        // Three threads blocked on you: the dot with its count.
+        "dot-count": { _ in
+            var sessions = sampleSessions
+            for index in sessions.indices { sessions[index].state = .waiting }
+            AgentCenter.shared.preview(nil, sessions: sessions)
+        },
         "today": { controller in
             WeatherModule.shared.preview(.init(temperature: 11.4, symbol: "cloud.sun.fill", rainAt: .now.addingTimeInterval(5400)))
             let hour: TimeInterval = 3600
@@ -197,7 +203,7 @@ struct Lab {
     }
 
     static var sampleSessions: [AgentCenter.Session] {
-        [
+        var sessions: [AgentCenter.Session] = [
             .init(id: "1", agent: .claudeCode, name: "Claude Code", hostPath: t3, project: "kerf", state: .working, updated: .now,
                   lastMessage: nil, title: "Make the timer its own tab", unread: false),
             .init(id: "2", agent: .claudeCode, name: "Claude Code", hostPath: "/System/Applications/Utilities/Terminal.app", project: "atlas",
@@ -205,6 +211,10 @@ struct Lab {
             .init(id: "3", agent: .codex, name: "Codex", hostPath: t3, project: "tempo", state: .waiting, updated: .now,
                   lastMessage: nil, title: "Review the weekly summary", unread: false),
         ]
+        sessions[0].subagents = ["a", "b"]
+        // How long each has worked, been done or waited.
+        for (index, minutes) in [41.0, 10, 12].enumerated() { sessions[index].stateSince = .now.addingTimeInterval(-minutes * 60) }
+        return sessions
     }
 
     static func previewPulls() {

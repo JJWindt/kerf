@@ -100,6 +100,34 @@ struct HookInstallerTests {
         #expect(try HookInstaller.remove(from: installed, agent: .claudeCode) == existing)
     }
 
+    @Test func knowsWhenHooksAreOutdated() throws {
+        let current = try HookInstaller.install(into: nil, agent: .claudeCode)
+        #expect(HookInstaller.isCurrent(in: current, agent: .claudeCode))
+        // An older Kerf installed no PostToolUse hooks.
+        var root = try OrderedJSON.parse(current)
+        var events = try #require(root["hooks"])
+        events["PostToolUse"] = nil
+        events["PostToolUseFailure"] = nil
+        root["hooks"] = events
+        let older = root.printed()
+        #expect(HookInstaller.isInstalled(in: older, agent: .claudeCode))
+        #expect(!HookInstaller.isCurrent(in: older, agent: .claudeCode))
+        #expect(!HookInstaller.isCurrent(in: nil, agent: .claudeCode))
+    }
+
+    @Test func vsCodeQuestionsOnlyWait() {
+        let payload: JSONValue = .object(["hook_event_name": "PreToolUse", "tool_name": "vscode_askQuestions", "tool_input": .object([
+            "questions": .array([.object(["header": "Stap 1", "question": "Mag stap 1 door?", "options": .array([.object(["label": "Ja"])])])]),
+        ])])
+        #expect(AgentEvent(payload) == .askedInApp(tool: "vscode_askQuestions"))
+        #expect(!AgentEnvelope(agent: .copilot, payload: payload).waitsForReply)
+    }
+
+    @Test func toolsFinishing() {
+        #expect(AgentEvent(.object(["hook_event_name": "PostToolUse", "tool_name": "Bash"])) == .toolFinished(tool: "Bash"))
+        #expect(AgentEvent(.object(["hook_event_name": "PostToolUseFailure", "tool_name": "Edit"])) == .toolFinished(tool: "Edit"))
+    }
+
     @Test func startsANewFile() throws {
         let file = try HookInstaller.install(into: nil, agent: .codex)
         #expect(HookInstaller.isInstalled(in: file, agent: .codex))
@@ -170,6 +198,11 @@ struct AgentDetailsTests {
         let helper = "/Applications/T3 Code (Nightly).app/Contents/Frameworks/T3 Code (Nightly) Helper.app/Contents/MacOS/T3 Code (Nightly) Helper"
         #expect(ProcessTree.app(containing: helper) == ProcessTree.App(name: "T3 Code (Nightly)", bundlePath: "/Applications/T3 Code (Nightly).app"))
         #expect(ProcessTree.app(containing: "/opt/homebrew/bin/claude") == nil)
+        // The desktop app's bundled Claude Code CLI is skipped, so the walk reaches Claude.app.
+        let cli = "/Users/me/Library/Application Support/Claude/claude-code/2.1.309/5af865b9901c/claude.app/Contents/MacOS/claude"
+        #expect(ProcessTree.app(containing: cli) == nil)
+        #expect(ProcessTree.app(containing: "/Applications/Claude.app/Contents/Helpers/disclaimer")
+            == ProcessTree.App(name: "Claude", bundlePath: "/Applications/Claude.app"))
     }
 
     @Test func titles() {
@@ -247,7 +280,7 @@ struct CopilotTests {
         let root = try OrderedJSON.parse(text)
         #expect(root["version"] == .number("1"))
         let permission = try #require(root["hooks"]?["PermissionRequest"]?.arrayValue?.first)
-        #expect(permission["bash"]?.stringValue == #""$HOME/Library/Application Support/Kerf/bin/kerf" hook copilot PermissionRequest"#)
+        #expect(permission["bash"]?.stringValue == #""$HOME/Library/Application Support/Kerf/bin/kerf" hook copilot PermissionRequest || true"#)
         #expect(permission["timeoutSec"] == .number("600"))
         #expect(root["hooks"]?["Stop"]?.arrayValue?.first?["timeoutSec"] == .number("10"))
         #expect(HookInstaller.isCopilotFile(text))
@@ -325,5 +358,47 @@ struct StopFailureTests {
         #expect(AgentEvent(.object(["hook_event_name": "StopFailure", "error": "rate_limit", "error_details": "429 Too Many Requests"]))
             == .stopFailed(error: "rate_limit", details: "429 Too Many Requests"))
         #expect(AgentEvent(.object(["hook_event_name": "StopFailure"])) == .stopFailed(error: "unknown", details: nil))
+    }
+}
+
+struct SubagentTests {
+    @Test func subagents() {
+        #expect(AgentEvent(.object(["hook_event_name": "SubagentStart", "agent_id": "a1", "agent_type": "Explore"])) == .subagentStarted(id: "a1"))
+        #expect(AgentEvent(.object(["hook_event_name": "SubagentStop", "agent_id": "a1"])) == .subagentStopped(id: "a1"))
+        #expect(AgentEvent(.object(["hook_event_name": "Stop", "background_tasks": .array([])])) == .stop(lastMessage: nil, subagentsRunning: false))
+        #expect(AgentEvent(.object(["hook_event_name": "Stop", "background_tasks": .array([.object(["id": "t1", "type": "subagent"])])]))
+            == .stop(lastMessage: nil, subagentsRunning: true))
+    }
+}
+
+struct ThreadLinkTests {
+    @Test func links() {
+        #expect(ThreadLink.of(host: "/System/Applications/Utilities/Terminal.app", tty: "/dev/ttys003", project: "kerf", desktopSessionID: nil)
+            == .terminalTab(script: ThreadLink.terminalScript("/dev/ttys003")))
+        // A tty that isn't one never reaches the script.
+        #expect(ThreadLink.of(host: "/Applications/iTerm.app", tty: "/dev/ttys003\" & quit", project: nil, desktopSessionID: nil) == .app)
+        #expect(ThreadLink.of(host: "/Applications/Claude.app", tty: nil, project: "kerf", desktopSessionID: "local_661abf77-b1c8")
+            == .url(URL(string: "claude://code/continue?session=local_661abf77-b1c8")!))
+        #expect(ThreadLink.of(host: "/Applications/Claude.app", tty: nil, project: "kerf", desktopSessionID: nil) == .app)
+        #expect(ThreadLink.of(host: "/Applications/Visual Studio Code.app", tty: nil, project: "kerf", desktopSessionID: nil) == .window(project: "kerf"))
+        // With its folder, VS Code opens that and needs no Accessibility; a subfolder goes up to the repository.
+        let repo = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+            .deletingLastPathComponent().path
+        #expect(ThreadLink.of(host: "/Applications/Visual Studio Code.app", tty: nil, project: "kerf", cwd: repo + "/KerfKit/Sources",
+                              desktopSessionID: nil) == .folder(repo))
+        #expect(ThreadLink.of(host: "/Applications/Xcode.app", tty: nil, project: "kerf", cwd: repo, desktopSessionID: nil) == .window(project: "kerf"))
+        #expect(ThreadLink.title("AgentCenter.swift — kerf — Visual Studio Code", names: "kerf"))
+        #expect(!ThreadLink.title("README.md — kerf-upstream — Visual Studio Code", names: "kerf"))
+        #expect(ThreadLink.title("kerf", names: "kerf"))
+    }
+
+    @Test func desktopSessions() throws {
+        let folder = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        let org = folder.appendingPathComponent("account/org")
+        try FileManager.default.createDirectory(at: org, withIntermediateDirectories: true)
+        try Data(#"{"sessionId":"local_661abf77","cliSessionId":"b095e46e"}"#.utf8).write(to: org.appendingPathComponent("local_661abf77.json"))
+        #expect(ThreadLink.desktopSessionID(forCLI: "b095e46e", in: folder) == "local_661abf77")
+        #expect(ThreadLink.desktopSessionID(forCLI: "other", in: folder) == nil)
+        try? FileManager.default.removeItem(at: folder)
     }
 }
