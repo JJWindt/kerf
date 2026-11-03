@@ -36,7 +36,8 @@ public enum HookInstaller {
             [
                 // Copilot CLI asks through PermissionRequest; VS Code's agent decides in PreToolUse.
                 Hook(event: "PermissionRequest", matcher: nil, timeout: 600),
-                Hook(event: "PreToolUse", matcher: nil, timeout: 10),
+                // Copilot's hooks have no matcher: every tool call comes by, and only questions wait.
+                Hook(event: "PreToolUse", matcher: nil, timeout: 600),
                 Hook(event: "PostToolUse", matcher: nil, timeout: 10),
                 Hook(event: "Notification", matcher: nil, timeout: 10),
                 Hook(event: "Stop", matcher: nil, timeout: 10),

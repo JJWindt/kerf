@@ -65,6 +65,7 @@ struct Lab {
         },
         "agent-open": { previewAgent(question: false); $0.open() },
         "agent-question": { previewAgent(question: true); $0.open() },
+        "agent-question-copilot": { previewAgent(question: true, agent: .copilot); $0.open() },
         "agent-question-long": { previewLongQuestion(); $0.open() },
         "agent-long": { previewLongCommand(); $0.open() },
         // The island is open on the threads when a question comes in: it must grow to fit.

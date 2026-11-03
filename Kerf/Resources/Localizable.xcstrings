@@ -131,6 +131,16 @@
         }
       }
     },
+    "Answer in %@" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Antwoord in %@"
+          }
+        }
+      }
+    },
     "Any tool or script can use the kerf command:" : {
       "localizations" : {
         "nl" : {
@@ -177,6 +187,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Vraag in %@"
+          }
+        }
+      }
+    },
+    "Ask there instead" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Laat het daar vragen"
           }
         }
       }

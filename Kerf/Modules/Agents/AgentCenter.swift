@@ -211,8 +211,14 @@ final class AgentCenter {
         }
         requests.removeAll { $0.id == request.id }
         if let index = sessions.firstIndex(where: { $0.id == request.sessionID }) {
+            switch reply.decision {
+            // Handed back to the tool's own window: it still waits on you there.
+            case .passThrough: sessions[index].state = .waiting
             // A `kerf notify --ask` has no turn that goes on: answered is done.
-            sessions[index].state = reply.decision == .deny || request.agent == .other ? .idle : .working
+            case _ where request.agent == .other: sessions[index].state = .idle
+            case .deny: sessions[index].state = .idle
+            default: sessions[index].state = .working
+            }
         }
         Hub.shared.refresh()
         if requests.isEmpty { IslandManager.current?.closeAgents() }
@@ -244,6 +250,14 @@ final class AgentCenter {
         sessions[index].unread = false
         sessions[index].needsInput = false
         Hub.shared.refresh()
+    }
+
+    /// Hands a question back to the tool, which then asks in its own window, and brings that up.
+    func answerInApp(_ request: Request) {
+        answer(request, AgentReply(decision: .passThrough))
+        IslandManager.current?.closeAll()
+        guard let host = request.hostPath else { return }
+        NSWorkspace.shared.openApplication(at: URL(fileURLWithPath: host), configuration: NSWorkspace.OpenConfiguration())
     }
 
     /// The app the thread runs in: the terminal or editor.

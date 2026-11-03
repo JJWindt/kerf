@@ -314,6 +314,14 @@ struct QuestionCard: View {
                 } else if let position {
                     Text(verbatim: position).font(.page(12, weight: .medium)).foregroundStyle(.white.opacity(0.5))
                 }
+                if let app = request.hostPath.map({ URL(fileURLWithPath: $0).deletingPathExtension().lastPathComponent }) {
+                    Button { AgentCenter.shared.answerInApp(request) } label: {
+                        Label { Text("Answer in \(app)") } icon: { Image(systemName: "arrow.up.forward.app") }
+                            .font(.page(12, weight: .medium)).foregroundStyle(.white.opacity(0.6))
+                    }
+                    .buttonStyle(.plain)
+                    .help(Text("Ask there instead"))
+                }
             }
             Text(verbatim: question.question).font(.page(15, weight: .semibold))
                 .fixedSize(horizontal: false, vertical: true)

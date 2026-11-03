@@ -1,6 +1,7 @@
 import Foundation
 
-/// A question an agent asks with options, as Claude Code's AskUserQuestion tool sends it.
+/// A question an agent asks with options, as Claude Code's AskUserQuestion and VS Code's
+/// vscode_askQuestions send it.
 public struct AgentQuestion: Equatable, Sendable, Identifiable {
     public struct Option: Equatable, Sendable, Identifiable {
         public var label: String
@@ -44,7 +45,8 @@ public enum AgentEvent: Equatable, Sendable {
         switch payload["hook_event_name"]?.string ?? "" {
         case "PermissionRequest":
             self = .permission(tool: tool, input: payload["tool_input"] ?? .null, suggestions: payload["permission_suggestions"]?.array ?? [])
-        case "PreToolUse" where tool == "AskUserQuestion":
+        // Claude Code's AskUserQuestion and VS Code's vscode_askQuestions send the same questions.
+        case "PreToolUse" where tool == "AskUserQuestion" || tool == "vscode_askQuestions":
             let raw = payload["tool_input"]?["questions"] ?? .array([])
             self = .question((raw.array ?? []).compactMap(AgentQuestion.init), raw: raw)
         case "Notification":
