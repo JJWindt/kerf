@@ -235,7 +235,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = Kerf;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_LSUIElement = YES;
-				INFOPLIST_KEY_NSAppleEventsUsageDescription = "Kerf controls music apps and reads render progress from DaVinci Resolve.";
+				INFOPLIST_KEY_NSAppleEventsUsageDescription = "Kerf controls music apps, reads render progress from DaVinci Resolve, and selects the Terminal or iTerm tab a thread runs in when you click it.";
 				INFOPLIST_KEY_NSAudioCaptureUsageDescription = "Kerf moves the waveform in the notch with the music. It only measures loudness; nothing is recorded.";
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Kerf shows your AirPods and their battery when they connect.";
 				INFOPLIST_KEY_NSDownloadsFolderUsageDescription = "Kerf shows the progress of your downloads in the notch.";
@@ -275,7 +275,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = Kerf;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_LSUIElement = YES;
-				INFOPLIST_KEY_NSAppleEventsUsageDescription = "Kerf controls music apps and reads render progress from DaVinci Resolve.";
+				INFOPLIST_KEY_NSAppleEventsUsageDescription = "Kerf controls music apps, reads render progress from DaVinci Resolve, and selects the Terminal or iTerm tab a thread runs in when you click it.";
 				INFOPLIST_KEY_NSAudioCaptureUsageDescription = "Kerf moves the waveform in the notch with the music. It only measures loudness; nothing is recorded.";
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Kerf shows your AirPods and their battery when they connect.";
 				INFOPLIST_KEY_NSDownloadsFolderUsageDescription = "Kerf shows the progress of your downloads in the notch.";

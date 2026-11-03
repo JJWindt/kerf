@@ -80,8 +80,7 @@ struct Overview: View {
                                     .frame(width: ui(30))
                                 VStack(alignment: .leading, spacing: 0) {
                                     Text(verbatim: pull.title).font(.page(13, weight: .semibold)).lineLimit(1)
-                                    Text(verbatim: "\(pull.repository.nameWithOwner.split(separator: "/").last ?? "") #\(pull.number)")
-                                        .font(.page(11)).foregroundStyle(.white.opacity(0.5))
+                                    PullDetails(pull: pull).font(.page(11))
                                 }
                                 Spacer()
                                 if let date = pull.updatedAt {
@@ -99,6 +98,33 @@ struct Overview: View {
             .foregroundStyle(.white)
             .padding(.horizontal, ui(20))
             .padding(.top, ui(4))
+        }
+    }
+}
+
+/// "kerf #42 · Checks failed": only what asks for you, the rest stays quiet.
+struct PullDetails: View {
+    let pull: GitHub.Item
+
+    var body: some View {
+        let name = Text(verbatim: "\(pull.repository.nameWithOwner.split(separator: "/").last ?? "") #\(pull.number)")
+            .foregroundStyle(.white.opacity(0.5))
+        if let status {
+            Text("\(name) · \(status)")
+        } else {
+            name
+        }
+    }
+
+    private var status: Text? {
+        if pull.checks == .failing {
+            Text("Checks failed").foregroundStyle(Color(nsColor: .systemRed))
+        } else if pull.changesRequested == true {
+            Text("Changes requested").foregroundStyle(Color(nsColor: .systemOrange))
+        } else if pull.checks == .pending {
+            Text("Checks running").foregroundStyle(.white.opacity(0.5))
+        } else {
+            nil
         }
     }
 }
@@ -122,8 +148,11 @@ struct ThreadRow: View {
                 AgentMark(agent: session.agent, hostPath: session.hostPath, size: ui(30))
                 VStack(alignment: .leading, spacing: ui(1)) {
                     Text(verbatim: session.title ?? session.project ?? session.name).font(.page(14, weight: .semibold)).lineLimit(1)
-                    Text(verbatim: [stateText, session.project].compactMap { $0 }.joined(separator: " · "))
-                        .font(.page(12)).foregroundStyle(.white.opacity(0.5)).lineLimit(1)
+                    // Once a minute is enough for "12 min".
+                    TimelineView(.everyMinute) { context in
+                        Text(verbatim: details(at: context.date))
+                            .font(.page(12)).foregroundStyle(.white.opacity(0.5)).lineLimit(1)
+                    }
                 }
                 Spacer()
                 indicator
@@ -134,11 +163,48 @@ struct ThreadRow: View {
         .buttonStyle(.plain)
     }
 
+    /// "Waiting for you · 12 min · 2 subagents · kerf", "Done 5 min ago · atlas".
+    private func details(at now: Date) -> String {
+        let elapsed = now.timeIntervalSince(session.stateSince)
+        var parts = [stateText]
+        if elapsed >= 60 {
+            if session.state == .idle {
+                parts[0] += " " + session.stateSince.formatted(.relative(presentation: .numeric, unitsStyle: .abbreviated))
+            } else {
+                parts.append(Duration.seconds(elapsed).formatted(.units(allowed: [.hours, .minutes], width: .abbreviated)))
+            }
+        }
+        if let subagentsText { parts.append(subagentsText) }
+        if let project = session.project { parts.append(project) }
+        return parts.joined(separator: " · ")
+    }
+
+    /// "2 subagents" while the thread runs them.
+    private var subagentsText: String? {
+        let count = session.subagents.count
+        guard session.state != .idle, count > 0 else { return nil }
+        return count == 1 ? String(localized: "1 subagent") : String(localized: "\(count) subagents")
+    }
+
     private var stateText: String {
-        switch session.state {
+        if let failure = session.failure { return String(localized: "Stopped: \(Self.failureText(failure))") }
+        return switch session.state {
         case .working: String(localized: "Working")
         case .waiting: String(localized: "Waiting for you")
         case .idle: String(localized: "Done")
+        }
+    }
+
+    /// Claude Code's StopFailure `error`, in words.
+    static func failureText(_ error: String) -> String {
+        switch error {
+        case "rate_limit": String(localized: "rate limit reached")
+        case "overloaded": String(localized: "Claude is overloaded")
+        case "server_error": String(localized: "server error")
+        case "max_output_tokens": String(localized: "answer too long")
+        case "authentication_failed", "oauth_org_not_allowed", "cloud_credential_error": String(localized: "sign-in problem")
+        case "billing_error", "account_on_hold": String(localized: "account problem")
+        default: String(localized: "API error")
         }
     }
 
@@ -149,6 +215,10 @@ struct ThreadRow: View {
                 .symbolEffect(.variableColor.iterative, isActive: true)
         case .waiting:
             AgentDot()
+        case .idle where session.failure != nil:
+            Image(systemName: "exclamationmark.triangle.fill").font(.page(13, weight: .semibold))
+                .foregroundStyle(Color(nsColor: .systemRed))
+                .accessibilityLabel(Text("Stopped on an error"))
         case .idle:
             Circle().fill(Color(nsColor: .systemBlue)).frame(width: ui(8), height: ui(8))
                 .accessibilityLabel(Text("Unread"))
@@ -162,8 +232,8 @@ struct ThreadRow: View {
     }
 }
 
-/// An AI agent's mark: its own app icon (Claude, Codex) with the app it runs in as a small badge,
-/// or an Apple Intelligence-style tile.
+/// An AI agent's mark: its own app icon (Claude, Codex), GitHub's Copilot mark, or an Apple
+/// Intelligence-style tile, with the app it runs in as a small badge.
 struct AgentMark: View {
     let agent: AgentKind
     let hostPath: String?
@@ -204,6 +274,12 @@ struct AgentMark: View {
     @ViewBuilder private var mark: some View {
         if let agentApp {
             Image(nsImage: NSWorkspace.shared.icon(forFile: agentApp)).resizable()
+        } else if agent == .copilot {
+            RoundedRectangle(cornerRadius: size * 0.27, style: .continuous)
+                .fill(Color(white: 0.13))
+                .overlay {
+                    Image("Copilot").resizable().scaledToFit().foregroundStyle(.white).padding(size * 0.2)
+                }
         } else {
             RoundedRectangle(cornerRadius: size * 0.27, style: .continuous)
                 .fill(Self.gradient)

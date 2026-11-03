@@ -21,6 +21,16 @@
         }
       }
     },
+    "%@ · %@" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · %@"
+          }
+        }
+      }
+    },
     "%@/s" : {
       "localizations" : {
         "nl" : {
@@ -83,6 +93,26 @@
         }
       }
     },
+    "%lld subagents" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld subagents"
+          }
+        }
+      }
+    },
+    "%lld threads are waiting for you" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld threads wachten op je"
+          }
+        }
+      }
+    },
     "%lld were already in the project" : {
       "localizations" : {
         "nl" : {
@@ -133,12 +163,32 @@
         }
       }
     },
+    "1 subagent" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 subagent"
+          }
+        }
+      }
+    },
     "1.5 seconds" : {
       "localizations" : {
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "1,5 seconde"
+          }
+        }
+      }
+    },
+    "account problem" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "probleem met je account"
           }
         }
       }
@@ -233,12 +283,32 @@
         }
       }
     },
+    "answer too long" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "antwoord te lang"
+          }
+        }
+      }
+    },
     "Any tool or script can use the kerf command:" : {
       "localizations" : {
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Elk programma of script kan het kerf-commando gebruiken:"
+          }
+        }
+      }
+    },
+    "API error" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "API-fout"
           }
         }
       }
@@ -393,6 +463,36 @@
         }
       }
     },
+    "Changes requested" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wijzigingen gevraagd"
+          }
+        }
+      }
+    },
+    "Checks failed" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checks mislukt"
+          }
+        }
+      }
+    },
+    "Checks running" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checks lopen"
+          }
+        }
+      }
+    },
     "Choose a drive" : {
       "localizations" : {
         "nl" : {
@@ -429,6 +529,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Claude kon geen antwoord geven."
+          }
+        }
+      }
+    },
+    "Claude is overloaded" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude is overbelast"
           }
         }
       }
@@ -489,6 +599,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Gekoppeld"
+          }
+        }
+      }
+    },
+    "Connected, with older hooks" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verbonden, met oudere hooks"
           }
         }
       }
@@ -719,6 +839,56 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Speel een geluid af als een agent klaar is"
+          }
+        }
+      }
+    },
+    "rate limit reached" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "limiet bereikt"
+          }
+        }
+      }
+    },
+    "server error" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "serverfout"
+          }
+        }
+      }
+    },
+    "sign-in problem" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "probleem met inloggen"
+          }
+        }
+      }
+    },
+    "Stopped on an error" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gestopt door een fout"
+          }
+        }
+      }
+    },
+    "Stopped: %@" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gestopt: %@"
           }
         }
       }
@@ -1675,6 +1845,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Omhoog"
+          }
+        }
+      }
+    },
+    "Update…" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Werk bij…"
           }
         }
       }

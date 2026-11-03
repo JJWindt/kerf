@@ -12,11 +12,11 @@ enum CompactPresentation: Equatable {
     case nowPlaying(artworkKey: Int, isPlaying: Bool)
     /// Volume, brightness or keyboard light: symbol left, level right. Replaces the macOS HUD.
     case level(LevelKind, Double)
-    /// An agent waits: its app's icon left, the orange dot right.
-    case agent(hostPath: String?)
+    /// An agent waits: its app's icon left, the orange dot (and how many wait) right.
+    case agent(agent: AgentKind, hostPath: String?)
     /// Threads finished or asking in their own window: the newest's mark left, a tick (or a
     /// bubble) right, with how many when more than one. Stays until you click or look.
-    case agentNotice(agent: AgentKind, hostPath: String?, count: Int, needsInput: Bool)
+    case agentNotice(agent: AgentKind, hostPath: String?, count: Int, needsInput: Bool, failed: Bool)
     /// A camera card is in: card left, camera right.
     case card(String)
     /// A card is being copied: a ring left, the percentage right.
@@ -37,7 +37,7 @@ enum CompactPresentation: Equatable {
     }
 
     var noticeCount: Int {
-        if case .agentNotice(_, _, let count, _) = self { count } else { 0 }
+        if case .agentNotice(_, _, let count, _, _) = self { count } else { 0 }
     }
 
     /// Same kind: update in place. Another kind: fade out, swap, fade in.
@@ -94,8 +94,8 @@ struct CompactView: View {
     let centerWidth: CGFloat
     let height: CGFloat
     private let wings = IslandGeometry.wing
-    /// An agent is waiting: the orange dot takes the right side, whatever else shows.
-    let showsAgentDot: Bool
+    /// Threads waiting on you: the orange dot takes the right side, whatever else shows.
+    let waitingCount: Int
 
     var body: some View {
         HStack(spacing: 0) {
@@ -103,7 +103,7 @@ struct CompactView: View {
                 .frame(width: wings)
             Color.clear.frame(width: centerWidth)
             Group {
-                if showsAgentDot { AgentDot() } else { trailing }
+                if waitingCount > 0 { AgentDot(count: waitingCount) } else { trailing }
             }
             .frame(width: wings)
         }
@@ -119,9 +119,9 @@ struct CompactView: View {
         case .level(let kind, let value):
             Image(systemName: kind.symbol(value)).font(.system(size: 11, weight: .semibold)).foregroundStyle(.white.opacity(0.9))
                 .contentTransition(.symbolEffect(.replace))
-        case .agent(let hostPath):
-            AgentMark(agent: AgentCenter.shared.requests.first?.agent ?? .claudeCode, hostPath: hostPath, size: 18)
-        case .agentNotice(let agent, let hostPath, _, _):
+        case .agent(let agent, let hostPath):
+            AgentMark(agent: agent, hostPath: hostPath, size: 18)
+        case .agentNotice(let agent, let hostPath, _, _, _):
             AgentMark(agent: agent, hostPath: hostPath, size: 18)
         case .card:
             Image(systemName: "sdcard.fill").font(.system(size: 14, weight: .semibold)).foregroundStyle(.white)
@@ -147,11 +147,13 @@ struct CompactView: View {
         case .level(_, let value):
             LevelBar(value: value).frame(width: 26, height: 3)
         case .agent:
-            AgentDot()
-        case .agentNotice(_, _, let count, let needsInput):
+            AgentDot(count: waitingCount)
+        case .agentNotice(_, _, let count, let needsInput, let failed):
             HStack(spacing: 3) {
-                Image(systemName: needsInput ? "ellipsis.bubble.fill" : "checkmark.circle.fill").font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(Color(nsColor: needsInput ? .systemOrange : .systemGreen))
+                // A thread that stopped on an error outranks one that asks, which outranks one that's done.
+                Image(systemName: failed ? "exclamationmark.triangle.fill" : needsInput ? "ellipsis.bubble.fill" : "checkmark.circle.fill")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(Color(nsColor: failed ? .systemRed : needsInput ? .systemOrange : .systemGreen))
                 if count > 1 {
                     Text(verbatim: "\(count)").font(.system(size: 11, weight: .semibold).monospacedDigit()).foregroundStyle(.white.opacity(0.8))
                         .contentTransition(.numericText())
@@ -186,14 +188,25 @@ struct CompactView: View {
     }
 }
 
-/// Apple orange, with a soft glow. Stays until the agent has its answer.
+/// Apple orange, with a soft glow. Stays until the thread moves on; with more than one thread
+/// waiting, how many.
 struct AgentDot: View {
+    var count = 1
+
     var body: some View {
-        Circle()
-            .fill(Color(nsColor: .systemOrange))
-            .frame(width: 9, height: 9)
-            .shadow(color: Color(nsColor: .systemOrange).opacity(0.8), radius: 4)
-            .accessibilityLabel(Text("An agent is waiting for you"))
+        HStack(spacing: 4) {
+            Circle()
+                .fill(Color(nsColor: .systemOrange))
+                .frame(width: 9, height: 9)
+                .shadow(color: Color(nsColor: .systemOrange).opacity(0.8), radius: 4)
+            if count > 1 {
+                Text(verbatim: "\(count)").font(.system(size: 11, weight: .semibold).monospacedDigit())
+                    .foregroundStyle(Color(nsColor: .systemOrange))
+                    .contentTransition(.numericText())
+            }
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(count > 1 ? Text("\(count) threads are waiting for you") : Text("An agent is waiting for you"))
     }
 }
 

@@ -27,7 +27,9 @@ final class Island {
     private(set) var expandedMounted = false
     private(set) var isHovered = false
     private(set) var presentation: CompactPresentation?
-    private(set) var showsAgentDot = false
+    /// Threads waiting on you, for the orange dot.
+    private(set) var waitingCount = 0
+    var showsAgentDot: Bool { waitingCount > 0 }
     private(set) var page: IslandPage = .home
     var pages: [IslandPage] = [.home]
     /// Each page's height as last laid out; until then its estimate.
@@ -120,14 +122,14 @@ final class Island {
     }
 
     /// New compact content. Same kind updates in place; another kind fades out, swaps and fades in.
-    func show(_ new: CompactPresentation?, agentDot: Bool) {
+    func show(_ new: CompactPresentation?, waiting: Int) {
         let kindChanged = new?.kind != presentation?.kind
-        guard kindChanged || new != presentation || agentDot != showsAgentDot else { return }
-        // Something new for you: a waiting agent, or one more thread with a notice.
-        if agentDot && !showsAgentDot || !kindChanged && (new?.noticeCount ?? 0) > (presentation?.noticeCount ?? 0) { bump() }
+        guard kindChanged || new != presentation || waiting != waitingCount else { return }
+        // Something new for you: one more thread waiting, or one more thread with a notice.
+        if waiting > waitingCount || !kindChanged && (new?.noticeCount ?? 0) > (presentation?.noticeCount ?? 0) { bump() }
         guard kindChanged, mode == .compact, compactShown > 0 else {
             presentation = new
-            withAnimation(.smooth(duration: 0.25)) { showsAgentDot = agentDot }
+            withAnimation(.smooth(duration: 0.25)) { waitingCount = waiting }
             settle()
             return
         }
@@ -138,7 +140,7 @@ final class Island {
             try? await Task.sleep(for: .seconds(0.1))
             guard generation == swapGeneration else { return }
             presentation = new
-            showsAgentDot = agentDot
+            waitingCount = waiting
             guard mode == .compact else { return }
             if restingMode == .idle {
                 go(.idle)

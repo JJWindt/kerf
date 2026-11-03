@@ -24,13 +24,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Kerf controls music apps and reads render progress from DaVinci Resolve."
+            "value": "Kerf controls music apps, reads render progress from DaVinci Resolve, and selects the Terminal or iTerm tab a thread runs in when you click it."
           }
         },
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Kerf bedient muziek-apps en leest de rendervoortgang uit DaVinci Resolve."
+            "value": "Kerf bedient muziek-apps, leest de rendervoortgang uit DaVinci Resolve en kiest het Terminal- of iTerm-tabblad waarin een thread draait als je erop klikt."
           }
         }
       }
