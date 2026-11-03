@@ -9,6 +9,8 @@ public enum RunningThreads {
         public var sessionID: String
         public var cwd: String
         public var hostPath: String?
+        /// Its terminal, as `/dev/ttys003`.
+        public var tty: String?
         public var title: String?
         public var updated: Date
     }
@@ -39,7 +41,7 @@ public enum RunningThreads {
             guard now.timeIntervalSince(transcript.date) < 15 * 60,
                   ClaudeTranscript.isMidTurn(read(transcript.url, tail: true)) else { continue }
             found.append(Found(sessionID: transcript.url.deletingPathExtension().lastPathComponent, cwd: cwd,
-                               hostPath: ProcessTree.hostApp(of: pid)?.bundlePath,
+                               hostPath: ProcessTree.hostApp(of: pid)?.bundlePath, tty: ProcessTree.terminal(of: pid),
                                title: ThreadTitle.fromTranscript(read(transcript.url, tail: false)), updated: transcript.date))
         }
         return found
@@ -55,6 +57,12 @@ public enum RunningThreads {
         let length: UInt64 = 256 * 1024
         if tail, let end = try? handle.seekToEnd(), end > length { try? handle.seek(toOffset: end - length) }
         return (try? handle.read(upToCount: Int(length))) ?? Data()
+    }
+
+    /// Every terminal some process still has open: `/dev/ttys003`. A thread whose tty isn't
+    /// among them had its window closed.
+    public static func liveTerminals() -> Set<String> {
+        Set(allProcesses().compactMap(ProcessTree.ownTerminal))
     }
 
     static func allProcesses() -> [pid_t] {
