@@ -198,6 +198,11 @@ struct AgentDetailsTests {
         let helper = "/Applications/T3 Code (Nightly).app/Contents/Frameworks/T3 Code (Nightly) Helper.app/Contents/MacOS/T3 Code (Nightly) Helper"
         #expect(ProcessTree.app(containing: helper) == ProcessTree.App(name: "T3 Code (Nightly)", bundlePath: "/Applications/T3 Code (Nightly).app"))
         #expect(ProcessTree.app(containing: "/opt/homebrew/bin/claude") == nil)
+        // The desktop app's bundled Claude Code CLI is skipped, so the walk reaches Claude.app.
+        let cli = "/Users/me/Library/Application Support/Claude/claude-code/2.1.309/5af865b9901c/claude.app/Contents/MacOS/claude"
+        #expect(ProcessTree.app(containing: cli) == nil)
+        #expect(ProcessTree.app(containing: "/Applications/Claude.app/Contents/Helpers/disclaimer")
+            == ProcessTree.App(name: "Claude", bundlePath: "/Applications/Claude.app"))
     }
 
     @Test func titles() {
