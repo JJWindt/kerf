@@ -219,6 +219,8 @@ final class AgentCenter {
         requests.removeAll { $0.id == request.id }
         if let index = sessions.firstIndex(where: { $0.id == request.sessionID }) {
             switch reply.decision {
+            // A `kerf notify --ask` has no turn that goes on: answered is done.
+            case _ where request.agent == .other: sessions[index].state = .idle
             // Handed back to the tool's own window: it still waits on you there.
             case .passThrough: sessions[index].state = .waiting
             case .deny: sessions[index].state = .idle
@@ -293,8 +295,13 @@ final class AgentCenter {
 
     /// The tool stopped waiting: answered in its own window, or timed out.
     private func drop(_ id: UUID) {
-        guard requests.contains(where: { $0.id == id }) else { return }
+        guard let request = requests.first(where: { $0.id == id }) else { return }
         requests.removeAll { $0.id == id }
+        // A `kerf notify --ask` that gave up waits for nothing anymore.
+        if request.agent == .other, !requests.contains(where: { $0.sessionID == request.sessionID }),
+           let index = sessions.firstIndex(where: { $0.id == request.sessionID }) {
+            sessions[index].state = .idle
+        }
         Hub.shared.refresh()
     }
 
