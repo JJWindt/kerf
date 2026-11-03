@@ -68,19 +68,34 @@ final class AgentCenter {
             Task { @MainActor in AgentCenter.shared.receive(line, connection) }
         }
         findRunning()
+        Task {
+            while true {
+                try? await Task.sleep(for: .seconds(60))
+                AgentCenter.shared.findRunning()
+            }
+        }
     }
 
     /// Threads already busy before Kerf heard of them: started before Kerf, or while it restarted.
     /// At launch and when the AI page opens; hooks tell the rest.
+    /// Also once a minute, to let go of threads whose window was closed without a SessionEnd.
     func findRunning() {
         Task.detached(priority: .utility) {
             let found = RunningThreads.claudeCode()
-            await MainActor.run { AgentCenter.shared.merge(found) }
+            let terminals = RunningThreads.liveTerminals()
+            await MainActor.run { AgentCenter.shared.merge(found, terminals: terminals) }
         }
     }
 
-    private func merge(_ found: [RunningThreads.Found]) {
+    private func merge(_ found: [RunningThreads.Found], terminals: Set<String>) {
         var next = sessions
+        // Its terminal tab or its app is gone: so is the thread, whatever it last said.
+        let running = Set(NSWorkspace.shared.runningApplications.compactMap { $0.bundleURL?.path })
+        next.removeAll { session in
+            if let tty = session.tty { return !terminals.contains(tty) }
+            if let host = session.hostPath { return !running.contains(host) }
+            return false
+        }
         let ids = Set(found.map { "\(AgentKind.claudeCode.rawValue)..\($0.sessionID)" })
         // A guess whose turn ended without a hook (Kerf missed it) goes again.
         next.removeAll { $0.foundByScan && !ids.contains($0.id) }
