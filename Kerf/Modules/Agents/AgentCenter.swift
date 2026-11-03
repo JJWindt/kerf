@@ -19,7 +19,9 @@ final class AgentCenter {
         var name: String
         var hostPath: String?
         var project: String?
-        var state: State
+        var state: State {
+            didSet { if state != oldValue { stateSince = .now } }
+        }
         var updated: Date
         var lastMessage: String?
         /// The first thing you asked in this thread.
@@ -32,6 +34,8 @@ final class AgentCenter {
         var foundByScan = false
         /// The agent's own session id, for finding its chat in P3 or T3 Code.
         var nativeID: String?
+        /// Since when it works, waits or is done.
+        var stateSince = Date.now
     }
 
     struct Request: Identifiable {
@@ -87,6 +91,7 @@ final class AgentCenter {
                                   project: ProjectName.of(thread.cwd), state: .working, updated: thread.updated, title: thread.title)
             session.foundByScan = true
             session.nativeID = thread.sessionID
+            session.stateSince = thread.updated
             next.append(session)
         }
         next.sort { $0.updated > $1.updated }
