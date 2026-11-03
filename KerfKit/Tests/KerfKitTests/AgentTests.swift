@@ -116,18 +116,12 @@ struct HookInstallerTests {
         #expect(!HookInstaller.isCurrent(in: nil, agent: .claudeCode))
     }
 
-    @Test func vsCodeQuestions() {
+    @Test func vsCodeQuestionsOnlyWait() {
         let payload: JSONValue = .object(["hook_event_name": "PreToolUse", "tool_name": "vscode_askQuestions", "tool_input": .object([
-            "questions": .array([.object(["header": "Eerste test", "question": "Mag ik doorgaan?",
-                                          "options": .array([.object(["label": "Ja", "description": "Keur goed."]), .object(["label": "Nee"])])])]),
+            "questions": .array([.object(["header": "Stap 1", "question": "Mag stap 1 door?", "options": .array([.object(["label": "Ja"])])])]),
         ])])
-        guard case .question(let questions, _) = AgentEvent(payload) else {
-            Issue.record("not a question")
-            return
-        }
-        #expect(questions.first?.question == "Mag ik doorgaan?")
-        #expect(questions.first?.options.map(\.label) == ["Ja", "Nee"])
-        #expect(questions.first?.multiSelect == false)
+        #expect(AgentEvent(payload) == .askedInApp(tool: "vscode_askQuestions"))
+        #expect(!AgentEnvelope(agent: .copilot, payload: payload).waitsForReply)
     }
 
     @Test func toolsFinishing() {

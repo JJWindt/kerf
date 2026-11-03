@@ -167,6 +167,12 @@ final class AgentCenter {
                 session.needsInput = true
                 session.unread = true
             }
+        case .askedInApp:
+            connection?.reply(nil)
+            // VS Code shows the question itself; the dot stays until it moves on.
+            session.state = .waiting
+            session.needsInput = false
+            Sounds.play(.question)
         case .toolFinished:
             connection?.reply(nil)
             // Answered somewhere, maybe in the terminal: the thread works again, unless Kerf still holds
