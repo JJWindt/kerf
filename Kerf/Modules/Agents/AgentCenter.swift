@@ -32,6 +32,10 @@ final class AgentCenter {
         var foundByScan = false
         /// The agent's own session id, for finding its chat in P3 or T3 Code.
         var nativeID: String?
+        /// The terminal it runs in, to pick the right tab: `/dev/ttys003`.
+        var tty: String?
+        /// Where it works, to open that folder in its editor.
+        var cwd: String?
     }
 
     struct Request: Identifiable {
@@ -87,6 +91,8 @@ final class AgentCenter {
                                   project: ProjectName.of(thread.cwd), state: .working, updated: thread.updated, title: thread.title)
             session.foundByScan = true
             session.nativeID = thread.sessionID
+            session.tty = thread.tty
+            session.cwd = thread.cwd
             next.append(session)
         }
         next.sort { $0.updated > $1.updated }
@@ -123,9 +129,24 @@ final class AgentCenter {
                 "mediaKeys": .bool(MediaKeys.shared.isRunning),
                 "mixer": .string(AppMixer.shared.channels.map { "\($0.name) \(Int($0.gain * 100))%\($0.isPlaying ? " playing" : "")" }.joined(separator: ", ")),
                 "waiting": .number(Double(requests.count)),
+                "list": .array(visibleThreads.map { session in
+                    .object([
+                        "id": .string(session.id),
+                        "title": session.title.map(JSONValue.string) ?? .null,
+                        "state": .string("\(session.state)"),
+                        "host": session.hostPath.map(JSONValue.string) ?? .null,
+                        "tty": session.tty.map(JSONValue.string) ?? .null,
+                    ])
+                }),
                 "blocked": .number(Double(waitingSessions.count)),
             ])
             connection?.reply(report.encoded())
+            return
+        }
+        // `kerf open`: a thread as if clicked, by (part of) its id.
+        if payload["hook_event_name"]?.string == "KerfOpen" {
+            connection?.reply(nil)
+            if let id = payload["thread"]?.string, let session = sessions.first(where: { $0.id.contains(id) }) { open(session) }
             return
         }
         // `kerf answer`: answer the first waiting question from a script.
@@ -147,6 +168,8 @@ final class AgentCenter {
         if !payload.sessionID.isEmpty { session.nativeID = payload.sessionID }
         session.project = payload.project ?? session.project
         session.hostPath = envelope.host ?? session.hostPath
+        session.tty = envelope.tty ?? session.tty
+        session.cwd = payload.workingDirectory ?? session.cwd
         // A thread Kerf joins halfway gets its title from the transcript.
         if isNew, session.title == nil, let transcript = payload.transcriptPath { loadTitle(sessionID, from: transcript) }
 
@@ -265,24 +288,53 @@ final class AgentCenter {
         Hub.shared.refresh()
     }
 
-    /// The thread's own chat: in P3 or T3 Code the chat itself, elsewhere the app it runs in.
+    /// The thread's own place: in P3 or T3 Code the chat itself, else its terminal tab, its Claude
+    /// desktop session or its editor window, else just the app it runs in.
     func open(_ session: Session) {
         markRead(session.id)
         guard let host = session.hostPath else { return }
         let native = session.nativeID
         Task.detached(priority: .userInitiated) {
-            let link = native.flatMap { CodeThreadLink.url(hostPath: host, sessionID: $0) }
-            await MainActor.run {
-                let app = URL(fileURLWithPath: host)
-                let configuration = NSWorkspace.OpenConfiguration()
-                // Straight to that app: T3 Code would take the link otherwise, it has the same scheme.
-                if let link {
-                    NSWorkspace.shared.open([link], withApplicationAt: app, configuration: configuration)
-                } else {
-                    NSWorkspace.shared.openApplication(at: app, configuration: configuration)
+            if let link = native.flatMap({ CodeThreadLink.url(hostPath: host, sessionID: $0) }) {
+                await MainActor.run {
+                    // Straight to that app: T3 Code would take the link otherwise, it has the same scheme.
+                    NSWorkspace.shared.open([link], withApplicationAt: URL(fileURLWithPath: host), configuration: NSWorkspace.OpenConfiguration())
                 }
+                return
             }
+            let desktopID = native.flatMap { ThreadLink.desktopSessionID(forCLI: $0, in: KerfPaths.claudeDesktopSessions) }
+            let link = ThreadLink.of(host: host, tty: session.tty, project: session.project, cwd: session.cwd, desktopSessionID: desktopID)
+            await MainActor.run { Self.follow(link, host: host) }
         }
+    }
+
+    private static func follow(_ link: ThreadLink, host: String) {
+        let app = URL(fileURLWithPath: host)
+        switch link {
+        case .terminalTab(let script):
+            // osascript, not NSAppleScript: Terminal may take a moment and the island shouldn't wait.
+            // The script picks the tab and window; macOS only lets Kerf itself bring Terminal forward.
+            let process = Process()
+            process.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
+            process.arguments = ["-e", script]
+            process.terminationHandler = { _ in
+                Task { @MainActor in openApp(app) }
+            }
+            if (try? process.run()) == nil { openApp(app) }
+        case .url(let url):
+            NSWorkspace.shared.open(url)
+        case .folder(let path):
+            NSWorkspace.shared.open([URL(fileURLWithPath: path)], withApplicationAt: app, configuration: NSWorkspace.OpenConfiguration())
+        case .window(let project):
+            openApp(app)
+            WindowRaiser.raise(appAt: host) { ThreadLink.title($0, names: project) }
+        case .app:
+            openApp(app)
+        }
+    }
+
+    private static func openApp(_ app: URL) {
+        NSWorkspace.shared.openApplication(at: app, configuration: NSWorkspace.OpenConfiguration())
     }
 
     private func loadTitle(_ sessionID: String, from path: String) {

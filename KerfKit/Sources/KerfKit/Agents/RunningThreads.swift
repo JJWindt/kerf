@@ -9,6 +9,8 @@ public enum RunningThreads {
         public var sessionID: String
         public var cwd: String
         public var hostPath: String?
+        /// Its terminal, as `/dev/ttys003`.
+        public var tty: String?
         public var title: String?
         public var updated: Date
     }
@@ -39,7 +41,7 @@ public enum RunningThreads {
             guard now.timeIntervalSince(transcript.date) < 15 * 60,
                   ClaudeTranscript.isMidTurn(read(transcript.url, tail: true)) else { continue }
             found.append(Found(sessionID: transcript.url.deletingPathExtension().lastPathComponent, cwd: cwd,
-                               hostPath: ProcessTree.hostApp(of: pid)?.bundlePath,
+                               hostPath: ProcessTree.hostApp(of: pid)?.bundlePath, tty: ProcessTree.terminal(of: pid),
                                title: ThreadTitle.fromTranscript(read(transcript.url, tail: false)), updated: transcript.date))
         }
         return found

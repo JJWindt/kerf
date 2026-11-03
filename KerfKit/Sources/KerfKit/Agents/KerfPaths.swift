@@ -9,6 +9,11 @@ public enum KerfPaths {
 
     public static var socket: String { support.appendingPathComponent("kerf.sock").path }
 
+    /// The Claude desktop app's Claude Code sessions, to open one by its id.
+    public static var claudeDesktopSessions: URL {
+        FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Library/Application Support/Claude/claude-code-sessions")
+    }
+
     /// Points at the app's own binary; hooks call this path so they survive the app moving.
     public static var commandLink: URL { support.appendingPathComponent("bin/kerf") }
 }
@@ -43,6 +48,28 @@ public enum ProcessTree {
         let bundle = String(path[..<range.lowerBound]) + ".app"
         if URL(fileURLWithPath: bundle).lastPathComponent == "claude.app", bundle.contains("/claude-code/") { return nil }
         return App(name: URL(fileURLWithPath: bundle).deletingPathExtension().lastPathComponent, bundlePath: bundle)
+    }
+
+    /// The controlling terminal of this process or the nearest parent with one: `/dev/ttys003`.
+    /// Nil inside an editor's extension host or the Claude desktop app.
+    public static func terminal(of pid: pid_t = getpid()) -> String? {
+        var current: pid_t? = pid
+        var steps = 0
+        while let pid = current, pid > 1, steps < 40 {
+            if let tty = ownTerminal(pid) { return tty }
+            current = parent(of: pid)
+            steps += 1
+        }
+        return nil
+    }
+
+    /// The process's own controlling terminal, without looking at its parents.
+    static func ownTerminal(_ pid: pid_t) -> String? {
+        var info = proc_bsdinfo()
+        let size = Int32(MemoryLayout<proc_bsdinfo>.size)
+        guard proc_pidinfo(pid, PROC_PIDTBSDINFO, 0, &info, size) == size, info.e_tdev != UInt32.max,
+              let name = devname(dev_t(bitPattern: info.e_tdev), S_IFCHR) else { return nil }
+        return "/dev/" + String(cString: name)
     }
 
     static func parent(of pid: pid_t) -> pid_t? {
