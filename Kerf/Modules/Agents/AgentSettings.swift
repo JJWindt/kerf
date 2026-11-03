@@ -15,13 +15,22 @@ struct AgentSettings: View {
                 ForEach(HookTarget.allCases) { target in
                     LabeledContent {
                         if target.isInstalled {
-                            Button("Disconnect") { prepare(target, install: false) }
+                            HStack {
+                                if !target.isCurrent {
+                                    Button("Update…") { prepare(target, install: true) }
+                                }
+                                Button("Disconnect") { prepare(target, install: false) }
+                            }
                         } else {
                             Button("Connect…") { prepare(target, install: true) }
                         }
                     } label: {
                         Text(target.name)
-                        Text(target.isInstalled ? "Connected" : "Not connected")
+                        if target.isInstalled, !target.isCurrent {
+                            Text("Connected, with older hooks")
+                        } else {
+                            Text(target.isInstalled ? "Connected" : "Not connected")
+                        }
                     }
                 }
             } header: {
@@ -100,6 +109,12 @@ enum HookTarget: String, CaseIterable, Identifiable {
     var isInstalled: Bool {
         let text = try? String(contentsOf: file, encoding: .utf8)
         return self == .copilot ? HookInstaller.isCopilotFile(text) : HookInstaller.isInstalled(in: text, agent: agent)
+    }
+
+    /// Installed with the hooks this version wants. Copilot's file is Kerf's own and rewritten whole.
+    var isCurrent: Bool {
+        let text = try? String(contentsOf: file, encoding: .utf8)
+        return self == .copilot ? text == HookInstaller.copilotFile() : HookInstaller.isCurrent(in: text, agent: agent)
     }
 }
 
