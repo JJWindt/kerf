@@ -11,6 +11,10 @@ public enum KerfPaths {
 
     /// Points at the app's own binary; hooks call this path so they survive the app moving.
     public static var commandLink: URL { support.appendingPathComponent("bin/kerf") }
+
+    /// While this file exists, `kerf hook` keeps every payload in `hookLog`: `kerf log on`.
+    public static var hookLogSwitch: URL { support.appendingPathComponent("log-hooks") }
+    public static var hookLog: URL { support.appendingPathComponent("hooks.jsonl") }
 }
 
 /// Which app a hook runs in, from the process tree: Claude, Terminal, Visual Studio Code.

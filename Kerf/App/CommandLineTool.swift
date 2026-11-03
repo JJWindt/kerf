@@ -12,6 +12,8 @@ enum CommandLineTool {
       kerf notify --ask [--agent NAME] [--title TITLE] MESSAGE
                                       asks to allow; exit 0 allowed, 1 declined, 2 no answer
       kerf answer allow|always|deny   answers the first waiting question
+      kerf log on|off|show|clear      keeps every hook payload in a local file, to see what
+                                      a tool sends
       kerf debug                      what the running app sees
       kerf version
     """
@@ -39,6 +41,8 @@ enum CommandLineTool {
             let envelope = AgentEnvelope(agent: .other, payload: .object(["hook_event_name": "KerfAnswer", "decision": .string(arguments[2])]))
             guard let line = try? JSONEncoder().encode(envelope) else { return 2 }
             return UnixSocket.send(line, to: KerfPaths.socket, waitForReply: false, timeout: 1) == nil ? 2 : 0
+        case "log":
+            return log(arguments.count > 2 ? arguments[2] : "show")
         case "debug":
             let envelope = AgentEnvelope(agent: .other, payload: .object(["hook_event_name": "KerfDebug"]))
             guard let line = try? JSONEncoder().encode(envelope),
@@ -70,6 +74,7 @@ enum CommandLineTool {
         let agent = AgentKind(rawValue: name) ?? .other
         let input = FileHandle.standardInput.readDataToEndOfFile()
         guard var payload = JSONValue.parse(input) else { return 0 }
+        record(agent: name, event: event, payload: payload)
         if agent == .copilot { payload = CopilotPayload.normalized(payload, event: event) }
         let host = ProcessTree.hostApp()
         let envelope = AgentEnvelope(agent: agent, host: host?.bundlePath, payload: payload)
@@ -82,6 +87,53 @@ enum CommandLineTool {
               let reply = try? JSONDecoder().decode(AgentReply.self, from: answer),
               let output = HookOutput.json(for: AgentEvent(payload), reply: reply, agent: agent) else { return 0 }
         FileHandle.standardOutput.write(output + Data([0x0A]))
+        return 0
+    }
+
+    /// Only while `kerf log on`: one line per hook call, long strings cut short. Stays on this Mac.
+    private static func record(agent: String, event: String?, payload: JSONValue) {
+        let files = FileManager.default
+        guard files.fileExists(atPath: KerfPaths.hookLogSwitch.path) else { return }
+        func trimmed(_ value: JSONValue) -> JSONValue {
+            switch value {
+            case .string(let text) where text.count > 2000: .string(String(text.prefix(2000)) + "…")
+            case .array(let items): .array(items.map(trimmed))
+            case .object(let members): .object(members.mapValues(trimmed))
+            default: value
+            }
+        }
+        let line: JSONValue = .object([
+            "time": .string(Date.now.formatted(.iso8601)),
+            "agent": .string(agent),
+            "event": event.map { .string($0) } ?? .null,
+            "payload": trimmed(payload),
+        ])
+        var data = line.encoded()
+        data.append(0x0A)
+        if !files.fileExists(atPath: KerfPaths.hookLog.path) { files.createFile(atPath: KerfPaths.hookLog.path, contents: nil) }
+        guard let handle = try? FileHandle(forWritingTo: KerfPaths.hookLog) else { return }
+        _ = try? handle.seekToEnd()
+        try? handle.write(contentsOf: data)
+        try? handle.close()
+    }
+
+    private static func log(_ command: String) -> Int32 {
+        let files = FileManager.default
+        switch command {
+        case "on":
+            try? files.createDirectory(at: KerfPaths.support, withIntermediateDirectories: true)
+            files.createFile(atPath: KerfPaths.hookLogSwitch.path, contents: nil)
+            print("Logging hook payloads to \(KerfPaths.hookLog.path)")
+        case "off":
+            try? files.removeItem(at: KerfPaths.hookLogSwitch)
+            print("Hook logging off. The log stays until `kerf log clear`.")
+        case "clear":
+            try? files.removeItem(at: KerfPaths.hookLog)
+            print("Hook log cleared.")
+        default:
+            let on = files.fileExists(atPath: KerfPaths.hookLogSwitch.path)
+            print("Hook logging is \(on ? "on" : "off"): \(KerfPaths.hookLog.path)")
+        }
         return 0
     }
 

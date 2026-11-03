@@ -271,7 +271,7 @@ struct CopilotTests {
         let root = try OrderedJSON.parse(text)
         #expect(root["version"] == .number("1"))
         let permission = try #require(root["hooks"]?["PermissionRequest"]?.arrayValue?.first)
-        #expect(permission["bash"]?.stringValue == #""$HOME/Library/Application Support/Kerf/bin/kerf" hook copilot PermissionRequest"#)
+        #expect(permission["bash"]?.stringValue == #""$HOME/Library/Application Support/Kerf/bin/kerf" hook copilot PermissionRequest || true"#)
         #expect(permission["timeoutSec"] == .number("600"))
         #expect(root["hooks"]?["Stop"]?.arrayValue?.first?["timeoutSec"] == .number("10"))
         #expect(HookInstaller.isCopilotFile(text))
