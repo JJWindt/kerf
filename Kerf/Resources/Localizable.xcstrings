@@ -1,6 +1,16 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "%lld threads are waiting for you" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld threads wachten op je"
+          }
+        }
+      }
+    },
     "0.25 seconds" : {
       "localizations" : {
         "nl" : {
@@ -237,6 +247,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Gekoppeld"
+          }
+        }
+      }
+    },
+    "Connected, with older hooks" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verbonden, met oudere hooks"
           }
         }
       }
@@ -647,6 +667,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ongelezen"
+          }
+        }
+      }
+    },
+    "Update…" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Werk bij…"
           }
         }
       }

@@ -23,6 +23,9 @@ public enum HookInstaller {
             [
                 Hook(event: "PermissionRequest", matcher: nil, timeout: 600),
                 Hook(event: "PreToolUse", matcher: "AskUserQuestion", timeout: 600),
+                // A tool that ran means a waiting thread moved on, also when you answered in the terminal.
+                Hook(event: "PostToolUse", matcher: nil, timeout: 10),
+                Hook(event: "PostToolUseFailure", matcher: nil, timeout: 10),
                 Hook(event: "Notification", matcher: nil, timeout: 10),
                 Hook(event: "Stop", matcher: nil, timeout: 10),
                 Hook(event: "SessionStart", matcher: nil, timeout: 10),
@@ -79,6 +82,19 @@ public enum HookInstaller {
                 (group["hooks"]?.arrayValue ?? []).contains { isKerfHandler($0, agent: agent) }
             }
         }
+    }
+
+    /// Installed, and with exactly the hooks this version of Kerf wants: an older Kerf may have
+    /// installed fewer.
+    public static func isCurrent(in text: String?, agent: AgentKind) -> Bool {
+        guard let text, let root = try? OrderedJSON.parse(text), case .object(let events)? = root["hooks"] else { return false }
+        var found = Set<String>()
+        for event in events {
+            for group in event.value.arrayValue ?? [] where (group["hooks"]?.arrayValue ?? []).contains(where: { isKerfHandler($0, agent: agent) }) {
+                found.insert("\(event.key)|\(group["matcher"]?.stringValue ?? "")")
+            }
+        }
+        return found == Set(hooks(for: agent).map { "\($0.event)|\($0.matcher ?? "")" })
     }
 
     /// The file with Kerf's hooks, replacing any it already had. Nil text means no file yet.

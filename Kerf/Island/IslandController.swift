@@ -80,7 +80,7 @@ final class IslandController {
     func apply(_ hub: Hub) {
         if island.pages != hub.pages { island.pages = hub.pages }
         if !hub.pages.contains(island.page), let first = hub.pages.first { island.select(first) }
-        island.show(hub.presentation, agentDot: hub.agentWaiting)
+        island.show(hub.presentation, waiting: hub.waitingCount)
         // The open page may need another height now.
         island.refit()
     }

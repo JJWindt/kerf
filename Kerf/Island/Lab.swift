@@ -39,8 +39,14 @@ struct Lab {
     /// Scenes for `shot`: set up an island, then it settles for a second and a half.
     static let scenes: [String: @MainActor (IslandController) -> Void] = [
         "idle": { _ in },
-        "banner": { $0.island.show(.banner(.agent(.claudeCode), .symbol("bell.fill", Color(nsColor: .systemOrange))), agentDot: false) },
-        "dot": { $0.island.show(nil, agentDot: true) },
+        "banner": { $0.island.show(.banner(.agent(.claudeCode), .symbol("bell.fill", Color(nsColor: .systemOrange))), waiting: 0) },
+        "dot": { $0.island.show(nil, waiting: 1) },
+        // Three threads blocked on you: the dot with its count.
+        "dot-count": { _ in
+            var sessions = sampleSessions
+            for index in sessions.indices { sessions[index].state = .waiting }
+            AgentCenter.shared.preview(nil, sessions: sessions)
+        },
         "agent": { _ in previewAgent(question: false) },
         "agent-copilot": { controller in
             previewAgent(question: false, agent: .copilot)

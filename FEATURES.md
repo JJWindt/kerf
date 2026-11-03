@@ -56,9 +56,16 @@ git checkout upstream/main -- Kerf/Modules/Music
 | Browser download progress | `Modules/Extras/DownloadsWatcher.swift` | `Hub`, `SettingsView` |
 | DaVinci Resolve render progress | `RenderWatcher` in `DownloadsWatcher.swift` | `Hub`, `AppDelegate` |
 
+## Added in this fork
+
+| Feature | Where |
+|---|---|
+| Waiting dot that stays: orange while any thread is blocked on you (a permission or a question), with the count when more than one, until that thread moves on (a tool runs, it stops, you prompt again, it ends). Answering in the terminal or a hook timing out no longer clears it. | `AgentCenter.waitingSessions`, `Hub.waitingCount`, `Compact.swift` (`AgentDot`), `PostToolUse`/`PostToolUseFailure` hooks in `HookInstaller` |
+| "Update…" in Settings → Agents when the installed hooks are older than this version's | `HookInstaller.isCurrent`, `AgentSettings.swift` |
+| The island stays in the MacBook's notch; floating islands on other displays are off by default | `Preferences.swift`, `IslandManager.currentController` |
+
 ## Wishlist
 
-- **Input-needed indicator that stays.** While any session needs your input, the notch keeps showing a
-  subtle marker until that session moves on — not until you look, and not only while the hook's
-  socket is open. Today a waiting permission disappears from the notch when the hook times out
-  (10 minutes) or when you open the AI page, even though Claude Code is still waiting.
+- **Subagents per thread.** Show "2 subagents running" on a thread, from `SubagentStart`/`SubagentStop`.
+- **Live activity.** What a thread is doing right now ("Bash: npm test", "Edit: Foo.swift"), from `PreToolUse`.
+- **Jump to the exact session** in the Claude desktop app, if it offers a link for that.

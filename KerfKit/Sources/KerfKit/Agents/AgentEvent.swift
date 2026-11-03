@@ -32,6 +32,8 @@ public enum AgentEvent: Equatable, Sendable {
     case question([AgentQuestion], raw: JSONValue)
     case notification(type: String?, message: String?)
     case stop(lastMessage: String?)
+    /// A tool ran (or failed): a thread that waited on you has moved on.
+    case toolFinished(tool: String)
     case sessionStart
     case sessionEnd
     case promptSubmitted(String?)
@@ -49,6 +51,8 @@ public enum AgentEvent: Equatable, Sendable {
             self = .notification(type: payload["notification_type"]?.string, message: payload["message"]?.string)
         case "Stop":
             self = .stop(lastMessage: payload["last_assistant_message"]?.string)
+        case "PostToolUse", "PostToolUseFailure":
+            self = .toolFinished(tool: tool)
         case "SessionStart": self = .sessionStart
         case "SessionEnd": self = .sessionEnd
         case "UserPromptSubmit": self = .promptSubmitted(payload["prompt"]?.string)

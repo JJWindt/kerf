@@ -117,6 +117,7 @@ final class AgentCenter {
                 "threads": .number(Double(visibleThreads.count)),
                 "accessibility": .bool(AXIsProcessTrusted()),
                 "waiting": .number(Double(requests.count)),
+                "blocked": .number(Double(waitingSessions.count)),
             ])
             connection?.reply(report.encoded())
             return
@@ -158,10 +159,20 @@ final class AgentCenter {
             connection?.reply(nil)
             if envelope.agent == .other {
                 Hub.shared.flash(.banner(.agent(envelope.agent), .symbol("bell.fill", Color(nsColor: .systemOrange))))
+            } else if type == "permission_prompt" {
+                // Claude Code shows its own prompt: the thread waits on you, also if Kerf missed the request.
+                session.state = .waiting
             } else if type == "elicitation_dialog" || type == "agent_needs_input" {
                 // Stays in the notch until you look or the thread moves on.
                 session.needsInput = true
                 session.unread = true
+            }
+        case .toolFinished:
+            connection?.reply(nil)
+            // Answered somewhere, maybe in the terminal: the thread works again, unless Kerf still holds
+            // one of its questions.
+            if session.state == .waiting, !requests.contains(where: { $0.sessionID == sessionID }) {
+                session.state = .working
             }
         case .stop(let last):
             connection?.reply(nil)
@@ -205,6 +216,12 @@ final class AgentCenter {
         }
         Hub.shared.refresh()
         if requests.isEmpty { IslandManager.current?.closeAgents() }
+    }
+
+    /// Threads blocked on you: a permission or a question, in the notch or in their own window.
+    /// The notch's orange dot stays while there is one, whether or not Kerf holds the question.
+    var waitingSessions: [Session] {
+        sessions.filter { $0.state == .waiting }
     }
 
     /// What the AI page lists: threads that run, wait, or finished since you last looked.
