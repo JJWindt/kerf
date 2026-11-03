@@ -156,6 +156,14 @@ struct Lab {
                 controller.island.select(.agents)
             }
         },
+        // A thread that stopped on a rate limit: the red triangle instead of the tick.
+        "agent-failed": { _ in
+            var failed = AgentCenter.Session(id: "4", agent: .claudeCode, name: "Claude Code", hostPath: t3, project: "kerf", state: .idle,
+                                             updated: .now, lastMessage: nil, title: "Port the waiting dot", unread: true)
+            failed.needsInput = true
+            failed.failure = "rate_limit"
+            AgentCenter.shared.preview(nil, sessions: [failed])
+        },
         "agent-sessions": { controller in
             AgentCenter.shared.preview(nil, sessions: sampleSessions)
             previewPulls()

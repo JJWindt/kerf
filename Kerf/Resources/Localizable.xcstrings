@@ -173,6 +173,16 @@
         }
       }
     },
+    "account problem" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "probleem met je account"
+          }
+        }
+      }
+    },
     "Agents" : {
       "localizations" : {
         "nl" : {
@@ -263,12 +273,32 @@
         }
       }
     },
+    "answer too long" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "antwoord te lang"
+          }
+        }
+      }
+    },
     "Any tool or script can use the kerf command:" : {
       "localizations" : {
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Elk programma of script kan het kerf-commando gebruiken:"
+          }
+        }
+      }
+    },
+    "API error" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "API-fout"
           }
         }
       }
@@ -459,6 +489,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Claude kon geen antwoord geven."
+          }
+        }
+      }
+    },
+    "Claude is overloaded" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude is overbelast"
           }
         }
       }
@@ -749,6 +789,56 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Algemeen"
+          }
+        }
+      }
+    },
+    "rate limit reached" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "limiet bereikt"
+          }
+        }
+      }
+    },
+    "server error" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "serverfout"
+          }
+        }
+      }
+    },
+    "sign-in problem" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "probleem met inloggen"
+          }
+        }
+      }
+    },
+    "Stopped on an error" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gestopt door een fout"
+          }
+        }
+      }
+    },
+    "Stopped: %@" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gestopt: %@"
           }
         }
       }

@@ -33,6 +33,8 @@ public enum AgentEvent: Equatable, Sendable {
     case notification(type: String?, message: String?)
     /// The turn ended. Background subagents may still run and wake the thread again.
     case stop(lastMessage: String?, subagentsRunning: Bool)
+    /// The turn ended on an API error: `rate_limit`, `overloaded`, `server_error` and the like.
+    case stopFailed(error: String, details: String?)
     case subagentStarted(id: String)
     case subagentStopped(id: String)
     /// The tool asks you in its own window and Kerf can't answer for you there (VS Code's
@@ -61,6 +63,8 @@ public enum AgentEvent: Equatable, Sendable {
         case "Stop":
             let running = (payload["background_tasks"]?.array ?? []).contains { $0["type"]?.string == "subagent" }
             self = .stop(lastMessage: payload["last_assistant_message"]?.string, subagentsRunning: running)
+        case "StopFailure":
+            self = .stopFailed(error: payload["error"]?.string ?? "unknown", details: payload["error_details"]?.string)
         case "SubagentStart":
             self = .subagentStarted(id: payload["agent_id"]?.string ?? "")
         case "SubagentStop":

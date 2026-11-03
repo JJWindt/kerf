@@ -23,6 +23,8 @@ public enum HookInstaller {
             [
                 Hook(event: "PermissionRequest", matcher: nil, timeout: 600),
                 Hook(event: "PreToolUse", matcher: "AskUserQuestion", timeout: 600),
+                // A turn that ended on an API error instead of finishing.
+                Hook(event: "StopFailure", matcher: nil, timeout: 10),
                 // Subagents per thread.
                 Hook(event: "SubagentStart", matcher: nil, timeout: 10),
                 Hook(event: "SubagentStop", matcher: nil, timeout: 10),

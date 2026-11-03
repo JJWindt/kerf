@@ -34,6 +34,8 @@ final class AgentCenter {
         var foundByScan = false
         /// The agent's own session id, for finding its chat in P3 or T3 Code.
         var nativeID: String?
+        /// The turn ended on an API error (`rate_limit`, `overloaded`, …) instead of finishing.
+        var failure: String?
         /// Subagents running for this thread, by their id.
         var subagents: Set<String> = []
         /// Since when it works, waits or is done.
@@ -236,10 +238,18 @@ final class AgentCenter {
             session.state = .idle
             session.unread = true
             session.needsInput = false
+            session.failure = nil
             session.lastMessage = last.map { String($0.prefix(300)) }
             // Only background subagents outlive the turn.
             if !subagentsRunning { session.subagents = [] }
             if Self.showsDone { Sounds.play(.done) }
+        case .stopFailed(let error, _):
+            connection?.reply(nil)
+            // Not done: it stopped on an error and waits for you to pick it up. Stays in the notch.
+            session.state = .idle
+            session.unread = true
+            session.needsInput = true
+            session.failure = error
         case .subagentStarted(let id):
             connection?.reply(nil)
             if !id.isEmpty { session.subagents.insert(id) }
@@ -256,6 +266,7 @@ final class AgentCenter {
             session.state = .working
             session.unread = false
             session.needsInput = false
+            session.failure = nil
             if session.title == nil { session.title = prompt.flatMap(ThreadTitle.from) }
         case .sessionStart, .other:
             connection?.reply(nil)

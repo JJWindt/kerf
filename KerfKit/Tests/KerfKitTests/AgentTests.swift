@@ -353,6 +353,14 @@ struct CodeThreadLinkTests {
     }
 }
 
+struct StopFailureTests {
+    @Test func failures() {
+        #expect(AgentEvent(.object(["hook_event_name": "StopFailure", "error": "rate_limit", "error_details": "429 Too Many Requests"]))
+            == .stopFailed(error: "rate_limit", details: "429 Too Many Requests"))
+        #expect(AgentEvent(.object(["hook_event_name": "StopFailure"])) == .stopFailed(error: "unknown", details: nil))
+    }
+}
+
 struct SubagentTests {
     @Test func subagents() {
         #expect(AgentEvent(.object(["hook_event_name": "SubagentStart", "agent_id": "a1", "agent_type": "Explore"])) == .subagentStarted(id: "a1"))

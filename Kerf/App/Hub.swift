@@ -75,7 +75,7 @@ final class Hub {
         var notice: CompactPresentation?
         if let newest = notices.first {
             notice = .agentNotice(agent: newest.agent, hostPath: newest.hostPath, count: notices.count,
-                                  needsInput: notices.contains(where: \.needsInput))
+                                  needsInput: notices.contains(where: \.needsInput), failed: notices.contains { $0.failure != nil })
         }
         let busy: CompactPresentation? = level ?? banner ?? offload.compactPresentation ?? TimerModule.shared.compactPresentation
             ?? RenderWatcher.shared.compactPresentation ?? DownloadsWatcher.shared.compactPresentation
