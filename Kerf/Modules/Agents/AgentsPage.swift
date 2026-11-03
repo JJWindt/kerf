@@ -80,8 +80,7 @@ struct Overview: View {
                                     .frame(width: ui(30))
                                 VStack(alignment: .leading, spacing: 0) {
                                     Text(verbatim: pull.title).font(.page(13, weight: .semibold)).lineLimit(1)
-                                    Text(verbatim: "\(pull.repository.nameWithOwner.split(separator: "/").last ?? "") #\(pull.number)")
-                                        .font(.page(11)).foregroundStyle(.white.opacity(0.5))
+                                    PullDetails(pull: pull).font(.page(11))
                                 }
                                 Spacer()
                                 if let date = pull.updatedAt {
@@ -99,6 +98,33 @@ struct Overview: View {
             .foregroundStyle(.white)
             .padding(.horizontal, ui(20))
             .padding(.top, ui(4))
+        }
+    }
+}
+
+/// "kerf #42 · Checks failed": only what asks for you, the rest stays quiet.
+struct PullDetails: View {
+    let pull: GitHub.Item
+
+    var body: some View {
+        let name = Text(verbatim: "\(pull.repository.nameWithOwner.split(separator: "/").last ?? "") #\(pull.number)")
+            .foregroundStyle(.white.opacity(0.5))
+        if let status {
+            Text("\(name) · \(status)")
+        } else {
+            name
+        }
+    }
+
+    private var status: Text? {
+        if pull.checks == .failing {
+            Text("Checks failed").foregroundStyle(Color(nsColor: .systemRed))
+        } else if pull.changesRequested == true {
+            Text("Changes requested").foregroundStyle(Color(nsColor: .systemOrange))
+        } else if pull.checks == .pending {
+            Text("Checks running").foregroundStyle(.white.opacity(0.5))
+        } else {
+            nil
         }
     }
 }

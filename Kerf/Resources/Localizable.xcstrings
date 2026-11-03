@@ -21,6 +21,16 @@
         }
       }
     },
+    "%@ · %@" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · %@"
+          }
+        }
+      }
+    },
     "%@/s" : {
       "localizations" : {
         "nl" : {
@@ -449,6 +459,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Kaartmappen"
+          }
+        }
+      }
+    },
+    "Changes requested" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wijzigingen gevraagd"
+          }
+        }
+      }
+    },
+    "Checks failed" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checks mislukt"
+          }
+        }
+      }
+    },
+    "Checks running" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checks lopen"
           }
         }
       }
