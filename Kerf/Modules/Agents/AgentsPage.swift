@@ -122,8 +122,11 @@ struct ThreadRow: View {
                 AgentMark(agent: session.agent, hostPath: session.hostPath, size: ui(30))
                 VStack(alignment: .leading, spacing: ui(1)) {
                     Text(verbatim: session.title ?? session.project ?? session.name).font(.page(14, weight: .semibold)).lineLimit(1)
-                    Text(verbatim: [stateText, subagentsText, session.project].compactMap { $0 }.joined(separator: " · "))
-                        .font(.page(12)).foregroundStyle(.white.opacity(0.5)).lineLimit(1)
+                    // Once a minute is enough for "12 min".
+                    TimelineView(.everyMinute) { context in
+                        Text(verbatim: details(at: context.date))
+                            .font(.page(12)).foregroundStyle(.white.opacity(0.5)).lineLimit(1)
+                    }
                 }
                 Spacer()
                 indicator
@@ -132,6 +135,22 @@ struct ThreadRow: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+    }
+
+    /// "Waiting for you · 12 min · 2 subagents · kerf", "Done 5 min ago · atlas".
+    private func details(at now: Date) -> String {
+        let elapsed = now.timeIntervalSince(session.stateSince)
+        var parts = [stateText]
+        if elapsed >= 60 {
+            if session.state == .idle {
+                parts[0] += " " + session.stateSince.formatted(.relative(presentation: .numeric, unitsStyle: .abbreviated))
+            } else {
+                parts.append(Duration.seconds(elapsed).formatted(.units(allowed: [.hours, .minutes], width: .abbreviated)))
+            }
+        }
+        if let subagentsText { parts.append(subagentsText) }
+        if let project = session.project { parts.append(project) }
+        return parts.joined(separator: " · ")
     }
 
     /// "2 subagents" while the thread runs them.

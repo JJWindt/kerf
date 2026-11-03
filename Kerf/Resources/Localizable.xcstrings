@@ -93,6 +93,16 @@
         }
       }
     },
+    "%lld threads are waiting for you" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld threads wachten op je"
+          }
+        }
+      }
+    },
     "%lld were already in the project" : {
       "localizations" : {
         "nl" : {
@@ -509,6 +519,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Gekoppeld"
+          }
+        }
+      }
+    },
+    "Connected, with older hooks" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verbonden, met oudere hooks"
           }
         }
       }
@@ -1685,6 +1705,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Omhoog"
+          }
+        }
+      }
+    },
+    "Update…" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Werk bij…"
           }
         }
       }

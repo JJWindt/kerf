@@ -12,6 +12,7 @@ enum CommandLineTool {
       kerf notify --ask [--agent NAME] [--title TITLE] MESSAGE
                                       asks to allow; exit 0 allowed, 1 declined, 2 no answer
       kerf answer allow|always|deny   answers the first waiting question
+      kerf open ID                    opens a thread as a click would (IDs in kerf debug)
       kerf debug                      what the running app sees
       kerf version
     """
@@ -37,6 +38,14 @@ enum CommandLineTool {
                 return 64
             }
             let envelope = AgentEnvelope(agent: .other, payload: .object(["hook_event_name": "KerfAnswer", "decision": .string(arguments[2])]))
+            guard let line = try? JSONEncoder().encode(envelope) else { return 2 }
+            return UnixSocket.send(line, to: KerfPaths.socket, waitForReply: false, timeout: 1) == nil ? 2 : 0
+        case "open":
+            guard arguments.count > 2 else {
+                print(usage)
+                return 64
+            }
+            let envelope = AgentEnvelope(agent: .other, payload: .object(["hook_event_name": "KerfOpen", "thread": .string(arguments[2])]))
             guard let line = try? JSONEncoder().encode(envelope) else { return 2 }
             return UnixSocket.send(line, to: KerfPaths.socket, waitForReply: false, timeout: 1) == nil ? 2 : 0
         case "debug":
@@ -72,7 +81,7 @@ enum CommandLineTool {
         guard var payload = JSONValue.parse(input) else { return 0 }
         if agent == .copilot { payload = CopilotPayload.normalized(payload, event: event) }
         let host = ProcessTree.hostApp()
-        let envelope = AgentEnvelope(agent: agent, host: host?.bundlePath, payload: payload)
+        let envelope = AgentEnvelope(agent: agent, host: host?.bundlePath, payload: payload, tty: ProcessTree.terminal())
         guard let line = try? JSONEncoder().encode(envelope) else { return 0 }
         guard envelope.waitsForReply else {
             _ = UnixSocket.send(line, to: KerfPaths.socket, waitForReply: false, timeout: 1)
