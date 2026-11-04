@@ -6,6 +6,7 @@ import SwiftUI
 struct AgentSettings: View {
     @AppStorage(AgentCenter.showsDoneKey) private var showsDone = true
     @AppStorage(AgentCenter.soundsDoneKey) private var soundsDone = true
+    @AppStorage(AgentCenter.asksInFrontAppKey) private var asksInFrontApp = true
     @AppStorage(Preferences.playsSounds) private var playsSounds = true
     @State private var change: HookChange?
     @State private var refresh = 0
@@ -51,6 +52,12 @@ struct AgentSettings: View {
                 Text(verbatim: "\"\(HookInstaller.commandPath)\" notify --ask --agent Gemini \"Push to main?\"")
                     .font(.system(.callout, design: .monospaced))
                     .textSelection(.enabled)
+            }
+
+            Section {
+                Toggle("Ask in the agent's own app while you're in it", isOn: $asksInFrontApp)
+            } footer: {
+                Text("A question or permission then shows in Claude, the terminal or the editor itself, and moves there when you switch to it. Kerf shows the orange dot.")
             }
 
             Section {

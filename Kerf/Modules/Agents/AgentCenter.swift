@@ -76,6 +76,9 @@ final class AgentCenter {
 
     static let showsDoneKey = "agents.showsDone"
     static let soundsDoneKey = "agents.soundsDone"
+    /// On by default: while you're in a thread's own app, it asks there and Kerf only shows the dot.
+    static let asksInFrontAppKey = "agents.asksInFrontApp"
+    static var asksInFrontApp: Bool { UserDefaults.standard.object(forKey: asksInFrontAppKey) as? Bool ?? true }
 
     func start() {
         let files = FileManager.default
@@ -87,6 +90,11 @@ final class AgentCenter {
         }
         server = try? UnixSocketServer(path: KerfPaths.socket) { line, connection in
             Task { @MainActor in AgentCenter.shared.receive(line, connection) }
+        }
+        // Going to a thread's app takes its questions along: they show there instead.
+        NSWorkspace.shared.notificationCenter.addObserver(forName: NSWorkspace.didActivateApplicationNotification, object: nil, queue: .main) { note in
+            let path = (note.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication)?.bundleURL?.path
+            Task { @MainActor in AgentCenter.shared.cameForward(path) }
         }
         findRunning()
         Task {
@@ -264,14 +272,20 @@ final class AgentCenter {
 
         switch event {
         case .permission, .question:
+            session.state = .waiting
+            session.needsInput = false
+            // You're in its app: it asks there, and the dot says it waits.
+            if envelope.agent != .other, Self.asksInFrontApp,
+               let front = NSWorkspace.shared.frontmostApplication?.bundleURL?.path, Self.samePath(front, session.hostPath) {
+                connection?.reply(try? JSONEncoder().encode(AgentReply(decision: .passThrough)))
+                break
+            }
             let request = Request(sessionID: sessionID, agent: envelope.agent, name: name, hostPath: session.hostPath,
                                   project: session.project, cwd: payload.workingDirectory, event: event, connection: connection)
             requests.append(request)
             connection?.onClose = { [id = request.id] in
                 Task { @MainActor in AgentCenter.shared.drop(id) }
             }
-            session.state = .waiting
-            session.needsInput = false
             Sounds.play(.question)
         case .notification(let type, _):
             connection?.reply(nil)
@@ -414,6 +428,19 @@ final class AgentCenter {
         sessions[index].needsInput = false
         GitHubModule.shared.prioritize()
         Hub.shared.refresh()
+    }
+
+    /// The app at `path` came to the front: what its threads ask in Kerf goes back to it.
+    private func cameForward(_ path: String?) {
+        guard Self.asksInFrontApp, let path else { return }
+        for request in requests where request.agent != .other && Self.samePath(path, request.hostPath) {
+            answer(request, AgentReply(decision: .passThrough))
+        }
+    }
+
+    private static func samePath(_ path: String, _ other: String?) -> Bool {
+        guard let other else { return false }
+        return URL(fileURLWithPath: path).resolvingSymlinksInPath().path == URL(fileURLWithPath: other).resolvingSymlinksInPath().path
     }
 
     /// The thread's own place: in P3 or T3 Code the chat itself, else its terminal tab, its Claude
