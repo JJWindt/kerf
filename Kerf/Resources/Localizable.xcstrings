@@ -1,6 +1,26 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "A question or permission then shows in Claude, the terminal or the editor itself, and moves there when you switch to it. Kerf shows the orange dot." : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Een vraag of toestemming verschijnt dan in Claude, de terminal of de editor zelf, en gaat daarheen als je naar die app gaat. Kerf toont de oranje stip."
+          }
+        }
+      }
+    },
+    "Ask in the agent's own app while you're in it" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vraag het in de app van de agent als je daar bent"
+          }
+        }
+      }
+    },
     "Copilot permissions stay in Copilot or VS Code, respecting its approval settings. Kerf still shows its sessions and waiting questions." : {
       "localizations" : {
         "nl" : {
