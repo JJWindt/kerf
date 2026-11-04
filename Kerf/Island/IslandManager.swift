@@ -13,6 +13,13 @@ final class IslandManager {
     /// The frontmost app's menu titles from the last look.
     private var menuItems: [CGRect] = []
 
+    var displayVisibility: [JSONValue] {
+        controllers.map { id, controller in
+            .object(["display": .number(Double(id)), "hiddenForFullScreen": .bool(controller.isHiddenForFullScreen),
+                     "windowVisible": .bool(controller.panel.isVisible)])
+        }
+    }
+
     func start() {
         Self.current = self
         Preferences.register()
@@ -69,17 +76,16 @@ final class IslandManager {
         }
     }
 
-    /// An island hides while the app in front fills its display: a full-screen window, sized to
-    /// the whole display or to everything below the notch. Its wings keep clear of the menus.
+    /// Hide for actual full screen, not a maximized window below the menu bar.
     private func apply(_ scan: MenuBarScan, front: pid_t?) {
         if let items = scan.menuItems { menuItems = items }
-        let frames = scan.windows.filter { $0.pid == front && $0.layer == 0 }.map(\.bounds)
+        let windows = scan.windows.filter { $0.pid == front && $0.layer == 0 }
         for controller in controllers.values {
             let display = CGDisplayBounds(controller.screen.displayID)
-            let notch = controller.screen.safeAreaInsets.top
-            let fills = frames.contains { frame in
-                frame.minX <= display.minX + 1 && frame.width >= display.width - 1
-                    && frame.maxY >= display.maxY - 1 && frame.minY <= display.minY + notch + 1
+            let dockShown = scan.dockFrames.contains { $0.intersects(display) }
+            let fills = windows.contains { window in
+                WindowVisibility.hidesIsland(window: window.bounds, display: display, notch: controller.screen.safeAreaInsets.top,
+                                             isFullScreen: window.isFullScreen, dockShown: dockShown)
             }
             controller.setHiddenForFullScreen(fills)
             if let range = controller.screen.notchRange {

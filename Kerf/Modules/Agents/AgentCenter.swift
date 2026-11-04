@@ -148,6 +148,7 @@ final class AgentCenter {
                 "pages": .string(Hub.shared.pages.map(\.rawValue).joined(separator: ",")),
                 "threads": .number(Double(visibleThreads.count)),
                 "accessibility": .bool(AXIsProcessTrusted()),
+                "islands": .array(IslandManager.current?.displayVisibility ?? []),
                 "waiting": .number(Double(requests.count)),
                 "blocked": .number(Double(waitingSessions.count)),
                 "list": .array(visibleThreads.map { session in
