@@ -24,7 +24,7 @@ enum IslandPage: String, CaseIterable, Identifiable {
     /// How tall the page gets before it scrolls: a waiting question and an answer get more room.
     var maxContentHeight: CGFloat {
         switch self {
-        case .agents where !AgentCenter.shared.requests.isEmpty: Layout.tallContentHeight
+        case .agents where AgentCenter.shared.selectedRequest != nil: Layout.tallContentHeight
         case .ask where AskModule.shared.isRunning || !AskModule.shared.answer.isEmpty: Layout.tallContentHeight
         default: Layout.maxContentHeight
         }

@@ -13,6 +13,7 @@ See [FEATURES.md](FEATURES.md) for what this fork keeps and what it left out.
 
 - **Permissions**: Allow, Always or Deny a tool call from the notch. You can still answer in the terminal; whichever comes first wins.
 - **Questions**: Claude's multiple-choice questions (AskUserQuestion) as buttons, with a field for another answer.
+- **Decisions**: opening Kerf takes you to the pending decision. “Threads” returns to the thread list: clicking a thread always opens its session, while a compact pill with a speech bubble and orange waiting dot (“Answer…” on hover) opens its pending decision in Kerf. Unanswered requests and drafts stay put when you switch.
 - **Threads**: every Claude Code session, working, waiting or done, with its project. A click opens the app it runs in.
 - **Done notices**: a tick in the notch when a session finishes, until you look.
 - **Branches**: shown when multiple visible sessions share a repository, including on permission cards.

@@ -8,12 +8,14 @@ import SwiftUI
 ///     Kerf --lab shot <scene> <file>  one settled frame of a scene (see `scenes`)
 ///     Kerf --lab menus <pid> <file>   an app's menu titles and the room they leave
 ///     Kerf --lab focus                whether the island keeps the keyboard as it should
+///     Kerf --lab workflows            checks queue, drafts and branch labels without real sessions
 struct Lab {
     enum Job {
         case motion(URL)
         case shot(String, URL)
         /// Opens with the keyboard, switches to another app, closes: logs whether the island stays.
         case focus
+        case workflows
         /// Writes an app's menu titles and the room they leave beside the notch to a file.
         case menus(pid: pid_t, file: URL)
     }
@@ -24,6 +26,10 @@ struct Lab {
         guard let index = arguments.firstIndex(of: "--lab"), arguments.count > index + 1 else { return nil }
         if arguments[index + 1] == "focus" {
             job = .focus
+            return
+        }
+        if arguments[index + 1] == "workflows" {
+            job = .workflows
             return
         }
         guard arguments.count > index + 2 else { return nil }
@@ -67,6 +73,16 @@ struct Lab {
         },
         "agent-open": { previewAgent(question: false); $0.open() },
         "agent-question": { previewAgent(question: true); $0.open() },
+        "agent-question-draft": { controller in
+            previewAgent(question: true)
+            if let id = AgentCenter.shared.requests.first?.id {
+                var draft = QuestionDraft()
+                draft.typed = "Keep the existing folder names"
+                AgentCenter.shared.questionDrafts[id] = draft
+                AgentCenter.shared.navigation.overview()
+            }
+            controller.open()
+        },
         "agent-question-long": { previewLongQuestion(); $0.open() },
         "agent-long": { previewLongCommand(); $0.open() },
         // The island is open on the threads when a question comes in: it must grow to fit.
@@ -92,6 +108,25 @@ struct Lab {
             previewPulls()
             controller.open(page: .agents)
         },
+        "agent-queue": { controller in
+            previewQueue()
+            controller.open(page: .agents)
+        },
+        "agent-thread-answer": { controller in
+            previewQueue()
+            controller.open(page: .agents)
+            let center = AgentCenter.shared
+            center.navigation.overview()
+            if let session = center.sessions.first(where: { $0.id == "4" }), let request = center.request(for: session) {
+                center.navigation.select(request.id)
+            }
+        },
+        "agent-queue-overview": { controller in
+            previewQueue()
+            previewPulls()
+            controller.open(page: .agents)
+            AgentCenter.shared.navigation.overview()
+        },
         "pull-alert": { _ in
             AgentCenter.shared.preview(nil, sessions: [])
             previewPullAlert()
@@ -102,6 +137,24 @@ struct Lab {
             controller.open(page: .agents)
         },
     ]
+
+    static func previewQueue() {
+        var sessions = sampleSessions
+        sessions[2].repository = .init(id: "/kerf/.git", branch: "v1-agentic", revision: "", repositories: ["octocat/kerf"])
+        sessions[1].repository = .init(id: "/kerf/.git", branch: "fix/waiting-dot", revision: "", repositories: ["octocat/kerf"])
+        let requests = ["1", "4"].map { id in
+            AgentCenter.Request(sessionID: id, agent: .claudeCode, name: "Claude Code", hostPath: terminal,
+                                project: "kerf", cwd: "/Users/me/GitHub/kerf",
+                                event: .permission(tool: "Bash", input: .object(["command": .string(id == "1" ? "swift test" : "git diff --stat")]), suggestions: []),
+                                connection: nil)
+        }
+        for index in sessions.indices where ["1", "4"].contains(sessions[index].id) {
+            sessions[index].state = .waiting
+            sessions[index].failure = nil
+            sessions[index].needsInput = false
+        }
+        AgentCenter.shared.preview(requests: requests, sessions: sessions)
+    }
 
     static func previewPullAlert() {
         previewPulls()
@@ -192,6 +245,7 @@ struct Lab {
         case .motion(let directory): motion(controller, directory)
         case .shot(let scene, let file): shot(controller, scene, file)
         case .focus: focus(controller)
+        case .workflows: checkWorkflows(controller)
         case .menus(let pid, let file):
             let scan = MenuBarScan(front: pid, readMenus: true)
             let display = CGDisplayBounds(screen.displayID)
@@ -214,6 +268,87 @@ struct Lab {
 
     static func quit(_ status: Int32) -> Never {
         exit(status)
+    }
+
+    private func checkWorkflows(_ controller: IslandController) {
+        func check(_ condition: Bool, _ message: String) {
+            guard condition else {
+                print("FAIL: \(message)")
+                Self.quit(1)
+            }
+        }
+        let center = AgentCenter.shared
+        Self.previewQueue()
+        let original = center.requests
+        controller.open(page: .agents)
+        check(center.selectedRequest?.id == original[0].id, "Opening selects oldest")
+        center.navigation.overview()
+        check(center.selectedRequest == nil && center.requests.count == 2, "Overview keeps requests pending")
+        for session in center.sessions {
+            let request = center.request(for: session)
+            check((request != nil) == ["1", "4"].contains(session.id), "Only answerable threads have an Answer action")
+            if let request {
+                center.navigation.select(request.id)
+                check(center.selectedRequest?.sessionID == session.id, "Answer selects that thread's decision")
+                center.navigation.overview()
+            }
+        }
+        guard var session = center.sessions.first(where: { $0.id == "1" }) else {
+            print("FAIL: missing preview session")
+            Self.quit(1)
+        }
+        session.hostPath = nil
+        center.open(session)
+        check(center.navigation.showsOverview && center.requests.count == 2, "Opening a session never answers or selects a decision")
+        center.navigation.select(original[0].id)
+        var draft = QuestionDraft()
+        draft.typed = "Keep this answer"
+        draft.index = 1
+        draft.answers = ["First question": "First answer"]
+        draft.picked = ["Option A"]
+        center.questionDrafts[original[0].id] = draft
+        center.navigation.overview()
+        center.navigation.select(original[1].id)
+        center.navigation.overview()
+        center.navigation.select(original[0].id)
+        check(center.questionDrafts[original[0].id]?.typed == draft.typed, "Typed answer survives switching")
+        check(center.questionDrafts[original[0].id]?.answers == draft.answers, "Earlier answers survive switching")
+        check(center.questionDrafts[original[0].id]?.picked == draft.picked, "Selections survive switching")
+        check(center.projectLabel(for: original[0]) == "kerf · v1-agentic", "Shared repository shows branch")
+        center.answer(original[0], .init(decision: .allow))
+        check(center.requests.count == 1 && center.selectedRequest?.id == original[1].id, "Answer advances selection")
+        check(center.questionDrafts[original[0].id] == nil, "Answered draft is removed")
+        center.navigation.overview()
+        center.answer(original[1], .init(decision: .deny))
+        check(center.requests.isEmpty && center.navigation.showsOverview, "Last answer leaves chosen overview")
+        Self.previewQueue()
+        let first = center.requests[0]
+        let another = AgentCenter.Request(sessionID: first.sessionID, agent: first.agent, name: first.name,
+                                          hostPath: first.hostPath, project: first.project, cwd: first.cwd,
+                                          event: first.event, connection: nil)
+        center.preview(requests: [first, another], sessions: center.sessions)
+        center.answer(first, .init(decision: .deny))
+        guard let waiting = center.visibleThreads.first(where: { $0.id == first.sessionID }) else {
+            print("FAIL: thread with another pending decision disappeared")
+            Self.quit(1)
+        }
+        check(waiting.state == .waiting && center.request(for: waiting)?.id == another.id,
+              "Another pending decision keeps the thread waiting and answerable")
+        var single = Self.sampleSessions[2]
+        single.repository = .init(id: "/kerf/.git", branch: "v1-agentic", revision: "", repositories: [])
+        center.preview(nil, sessions: [single])
+        check(center.projectLabel(for: single) == "kerf", "Single session hides branch")
+        Self.previewQueue()
+        center.navigation.select(center.requests[1].id)
+        controller.close()
+        controller.open(page: .agents)
+        check(center.selectedRequest?.id == center.requests.first?.id, "Reopening resets to oldest")
+        center.preview(nil, sessions: [])
+        Self.previewPullAlert()
+        check(PullRequests.shared.attentionCount == 2, "PR transitions create two quiet alerts")
+        check(Hub.shared.presentation?.kind == "pullNotice", "PR alerts reach the compact island")
+        print("PASS: decision-first navigation, per-thread Answer actions, independent session links, draft retention, branches and PR presentation")
+        Self.quit(0)
     }
 
     private func focus(_ controller: IslandController) {

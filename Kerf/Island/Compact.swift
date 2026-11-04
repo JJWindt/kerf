@@ -138,13 +138,14 @@ struct CompactView: View {
 /// waiting, how many.
 struct AgentDot: View {
     var count = 1
+    var glows = true
 
     var body: some View {
         HStack(spacing: 4) {
             Circle()
                 .fill(Color(nsColor: .systemOrange))
                 .frame(width: 9, height: 9)
-                .shadow(color: Color(nsColor: .systemOrange).opacity(0.8), radius: 4)
+                .shadow(color: Color(nsColor: .systemOrange).opacity(glows ? 0.8 : 0), radius: glows ? 4 : 0)
             if count > 1 {
                 Text(verbatim: "\(count)").font(.system(size: 11, weight: .semibold).monospacedDigit())
                     .foregroundStyle(Color(nsColor: .systemOrange))

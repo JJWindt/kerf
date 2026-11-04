@@ -8,14 +8,27 @@ struct AgentsPage: View {
     private let github = PullRequests.shared
 
     var body: some View {
-        Group {
-            if let request = center.requests.first {
+        VStack(spacing: ui(8)) {
+            if let request = center.selectedRequest {
+                Button {
+                    center.navigation.overview()
+                } label: {
+                    Label("Threads", systemImage: "chevron.left")
+                        .font(.page(12, weight: .medium))
+                        .foregroundStyle(.white.opacity(0.7))
+                        .padding(.vertical, ui(4))
+                }
+                .buttonStyle(.plain)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, ui(22))
                 Group {
                     switch request.event {
                     case .question(let questions, _):
-                        QuestionCard(request: request, questions: questions, position: position)
+                        QuestionCard(request: request, questions: questions,
+                                     draft: Binding(get: { center.questionDrafts[request.id] ?? QuestionDraft() },
+                                                    set: { center.questionDrafts[request.id] = $0 }))
                     default:
-                        PermissionCard(request: request, position: position)
+                        PermissionCard(request: request)
                     }
                 }
                 .id(request.id)
@@ -30,18 +43,14 @@ struct AgentsPage: View {
         }
     }
 
-    private var position: String? {
-        center.requests.count > 1 ? String(localized: "1 of \(center.requests.count)") : nil
-    }
-
     static var contentHeight: CGFloat {
         let center = AgentCenter.shared
-        if let request = center.requests.first {
+        if let request = center.selectedRequest {
             if case .question(let questions, _) = request.event {
                 let options = questions.first?.options.count ?? 0
-                return 112 + CGFloat((options + 1) / 2) * 46
+                return 32 + 112 + CGFloat((options + 1) / 2) * 46
             }
-            return 204
+            return 32 + 204
         }
         let threads = min(center.visibleThreads.count, 4)
         let pulls = min(PullRequests.shared.pulls.count, 3)
@@ -157,26 +166,54 @@ struct SectionLabel: View {
 /// One thread: the agent, what was asked, and whether it runs, waits or is done.
 struct ThreadRow: View {
     let session: AgentCenter.Session
+    private let center = AgentCenter.shared
+    @State private var answerHovered = false
 
     var body: some View {
-        Button(action: open) {
-            HStack(spacing: ui(10)) {
-                AgentMark(agent: session.agent, hostPath: session.hostPath, size: ui(30))
-                VStack(alignment: .leading, spacing: ui(1)) {
-                    Text(verbatim: session.title ?? session.project ?? session.name).font(.page(14, weight: .semibold)).lineLimit(1)
-                    // Once a minute is enough for "12 min".
-                    TimelineView(.everyMinute) { context in
-                        Text(verbatim: details(at: context.date))
-                            .font(.page(12)).foregroundStyle(.white.opacity(0.5)).lineLimit(1)
+        let request = center.request(for: session)
+        HStack(spacing: ui(10)) {
+            Button(action: open) {
+                HStack(spacing: ui(10)) {
+                    AgentMark(agent: session.agent, hostPath: session.hostPath, size: ui(30))
+                    VStack(alignment: .leading, spacing: ui(1)) {
+                        Text(verbatim: session.title ?? session.project ?? session.name).font(.page(14, weight: .semibold)).lineLimit(1)
+                        // Once a minute is enough for "12 min".
+                        TimelineView(.everyMinute) { context in
+                            Text(verbatim: details(at: context.date))
+                                .font(.page(12)).foregroundStyle(.white.opacity(0.5)).lineLimit(1)
+                        }
                     }
+                    Spacer(minLength: 0)
+                    if request == nil { indicator.frame(width: ui(28), height: ui(36)) }
                 }
-                Spacer()
-                indicator
+                .frame(maxWidth: .infinity, minHeight: ui(46), alignment: .leading)
+                .contentShape(Rectangle())
             }
-            .frame(height: ui(46))
-            .contentShape(Rectangle())
+            .buttonStyle(.plain)
+            if let request {
+                Button { center.navigation.select(request.id) } label: {
+                    HStack(spacing: ui(6)) {
+                        Image(systemName: "text.bubble")
+                            .font(.page(13, weight: .medium))
+                            .foregroundStyle(.white.opacity(answerHovered ? 0.95 : 0.75))
+                        AgentDot(glows: false)
+                    }
+                    .padding(.horizontal, ui(8))
+                    .frame(height: ui(26))
+                    .background(.white.opacity(answerHovered ? 0.16 : 0.08), in: Capsule())
+                    .frame(minWidth: ui(44), minHeight: ui(36))
+                    .contentShape(Rectangle())
+                    .animation(.easeOut(duration: 0.12), value: answerHovered)
+                }
+                .buttonStyle(.plain)
+                .onHover { answerHovered = $0 }
+                .help(Text("Answer…"))
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(Text("Answer…"))
+                .accessibilityHint(Text("Show this thread's decision in Kerf"))
+            }
         }
-        .buttonStyle(.plain)
+        .frame(height: ui(46))
     }
 
     /// "Working · 12 min · 2 subagents · kerf", "Done 5 min ago · kerf".
@@ -225,7 +262,7 @@ struct ThreadRow: View {
             Image(systemName: "ellipsis").font(.page(14, weight: .bold)).foregroundStyle(.white.opacity(0.7))
                 .symbolEffect(.variableColor.iterative, isActive: true)
         case .waiting:
-            AgentDot()
+            AgentDot(glows: false)
         case .idle where session.failure != nil:
             Image(systemName: "exclamationmark.triangle.fill").font(.page(13, weight: .semibold))
                 .foregroundStyle(Color(nsColor: .systemRed))
@@ -304,7 +341,6 @@ struct AgentMark: View {
 /// then grey, grey and blue capsules.
 struct PermissionCard: View {
     let request: AgentCenter.Request
-    let position: String?
 
     var body: some View {
         let summary = summary
@@ -312,9 +348,6 @@ struct PermissionCard: View {
             HStack(alignment: .top) {
                 AgentMark(agent: request.agent, hostPath: request.hostPath, size: ui(28))
                 Spacer()
-                if let position {
-                    Text(verbatim: position).font(.page(12, weight: .medium)).foregroundStyle(.white.opacity(0.5))
-                }
             }
             .padding(.bottom, ui(6))
             Text(verbatim: request.name).font(.page(16, weight: .semibold))
@@ -379,15 +412,11 @@ struct PermissionCard: View {
 struct QuestionCard: View {
     let request: AgentCenter.Request
     let questions: [AgentQuestion]
-    let position: String?
-    @State private var index = 0
-    @State private var answers: [String: String] = [:]
-    @State private var picked: Set<String> = []
-    @State private var typed = ""
+    @Binding var draft: QuestionDraft
     @FocusState private var typing: Bool
 
     var body: some View {
-        let question = questions[min(index, questions.count - 1)]
+        let question = questions[min(draft.index, questions.count - 1)]
         VStack(alignment: .leading, spacing: ui(10)) {
             HStack(spacing: ui(8)) {
                 AgentMark(agent: request.agent, hostPath: request.hostPath, size: ui(22))
@@ -397,9 +426,7 @@ struct QuestionCard: View {
                 }
                 Spacer()
                 if questions.count > 1 {
-                    Text(verbatim: "\(index + 1)/\(questions.count)").font(.page(12, weight: .medium)).foregroundStyle(.white.opacity(0.5))
-                } else if let position {
-                    Text(verbatim: position).font(.page(12, weight: .medium)).foregroundStyle(.white.opacity(0.5))
+                    Text(verbatim: "\(draft.index + 1)/\(questions.count)").font(.page(12, weight: .medium)).foregroundStyle(.white.opacity(0.5))
                 }
                 if let app = request.hostPath.map({ URL(fileURLWithPath: $0).deletingPathExtension().lastPathComponent }) {
                     Button { AgentCenter.shared.answerInApp(request) } label: {
@@ -415,7 +442,7 @@ struct QuestionCard: View {
             if Self.fitsCapsules(question.options) {
                 LazyVGrid(columns: [GridItem(.flexible(), spacing: ui(10)), GridItem(.flexible(), spacing: ui(10))], spacing: ui(10)) {
                     ForEach(question.options) { option in
-                        IslandButton(verbatim: option.label, role: picked.contains(option.label) ? .primary : .secondary) {
+                        IslandButton(verbatim: option.label, role: draft.picked.contains(option.label) ? .primary : .secondary) {
                             tap(option, in: question)
                         }
                     }
@@ -423,27 +450,27 @@ struct QuestionCard: View {
             } else {
                 VStack(spacing: ui(8)) {
                     ForEach(question.options) { option in
-                        OptionRow(option: option, isPicked: picked.contains(option.label), multiSelect: question.multiSelect) {
+                        OptionRow(option: option, isPicked: draft.picked.contains(option.label), multiSelect: question.multiSelect) {
                             tap(option, in: question)
                         }
                     }
                 }
             }
             HStack(spacing: ui(10)) {
-                TextField("Other answer", text: $typed)
+                TextField("Other answer", text: $draft.typed)
                     .textFieldStyle(.plain)
                     .font(.page(14))
                     .padding(.horizontal, ui(14))
                     .frame(height: ui(34))
                     .background(.white.opacity(0.1), in: Capsule())
                     .focused($typing)
-                    .onSubmit { if !typed.isEmpty { choose(typed, for: question) } }
+                    .onSubmit { if !draft.typed.isEmpty { choose(draft.typed, for: question) } }
                 if question.multiSelect {
                     IslandButton(title: "Done", role: .primary) {
-                        choose(question.options.map(\.label).filter(picked.contains).joined(separator: ", "), for: question)
+                        choose(question.options.map(\.label).filter(draft.picked.contains).joined(separator: ", "), for: question)
                     }
                     .frame(width: ui(90))
-                    .disabled(picked.isEmpty)
+                    .disabled(draft.picked.isEmpty)
                 }
             }
         }
@@ -459,20 +486,20 @@ struct QuestionCard: View {
 
     private func tap(_ option: AgentQuestion.Option, in question: AgentQuestion) {
         if question.multiSelect {
-            if picked.contains(option.label) { picked.remove(option.label) } else { picked.insert(option.label) }
+            if draft.picked.contains(option.label) { draft.picked.remove(option.label) } else { draft.picked.insert(option.label) }
         } else {
             choose(option.label, for: question)
         }
     }
 
     private func choose(_ answer: String, for question: AgentQuestion) {
-        answers[question.question] = answer
-        picked = []
-        typed = ""
-        if index + 1 < questions.count {
-            index += 1
+        draft.answers[question.question] = answer
+        draft.picked = []
+        draft.typed = ""
+        if draft.index + 1 < questions.count {
+            draft.index += 1
         } else {
-            AgentCenter.shared.answer(request, AgentReply(decision: .allow, answers: answers))
+            AgentCenter.shared.answer(request, AgentReply(decision: .allow, answers: draft.answers))
         }
     }
 }
