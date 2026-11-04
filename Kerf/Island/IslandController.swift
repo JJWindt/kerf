@@ -39,7 +39,8 @@ final class IslandController {
         island.onTap = { [weak self] in
             guard let self, island.mode != .expanded else { return }
             // A thread's notice goes straight to its chat, like tapping a notification.
-            if case .agentNotice = Hub.shared.presentation, let newest = AgentCenter.shared.notices.first {
+            if AgentCenter.shared.requests.isEmpty, !Hub.shared.agentWaiting,
+               case .agentNotice = Hub.shared.presentation, let newest = AgentCenter.shared.notices.first {
                 hoverTask?.cancel()
                 hoverTask = nil
                 AgentCenter.shared.open(newest)
@@ -91,6 +92,7 @@ final class IslandController {
         hoverTask = nil
         // Only the keyboard keeps it open after the pointer leaves: you are typing in it.
         self.pinned = self.pinned || keyboard
+        if island.mode != .expanded { AgentCenter.shared.navigation.openOldest() }
         // A waiting agent or a thread's notice comes first; otherwise the overview, every time.
         let overview: IslandPage? = island.pages.contains(.home) || Hub.shared.morePages.contains(.home) ? .home : nil
         if let page = page ?? Hub.shared.attentionPage ?? overview { island.select(page) }

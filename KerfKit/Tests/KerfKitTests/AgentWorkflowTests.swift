@@ -2,6 +2,50 @@ import Foundation
 import Testing
 @testable import KerfKit
 
+struct RequestNavigationTests {
+    @Test func opensDecisionAndSelectsFromThreadsWithoutRemovingRequests() {
+        let ids = [UUID(), UUID(), UUID()]
+        var navigation = RequestNavigation()
+        navigation.update(ids)
+        #expect(navigation.selectedID == ids[0])
+        navigation.overview()
+        #expect(navigation.showsOverview)
+        #expect(navigation.ids == ids)
+        navigation.select(ids[2])
+        #expect(navigation.selectedID == ids[2])
+        #expect(!navigation.showsOverview)
+        navigation.openOldest()
+        #expect(navigation.selectedID == ids[0])
+        #expect(!navigation.showsOverview)
+        navigation.overview()
+        navigation.select(UUID())
+        #expect(navigation.showsOverview)
+        #expect(navigation.selectedID == ids[0])
+    }
+
+    @Test func updatesDoNotStealSelectionOrLeaveAStaleRequest() {
+        let ids = [UUID(), UUID(), UUID()]
+        var navigation = RequestNavigation()
+        navigation.update(Array(ids.prefix(2)))
+        navigation.select(ids[1])
+        navigation.update(ids)
+        #expect(navigation.selectedID == ids[1])
+        navigation.update([ids[0], ids[2]])
+        #expect(navigation.selectedID == ids[2])
+        navigation.overview()
+        navigation.update([ids[0]])
+        #expect(navigation.showsOverview)
+        #expect(navigation.selectedID == ids[0])
+        navigation.update([])
+        #expect(navigation.selectedID == nil)
+        navigation.update([ids[2]])
+        #expect(navigation.showsOverview)
+        navigation.openOldest()
+        #expect(navigation.selectedID == ids[2])
+        #expect(!navigation.showsOverview)
+    }
+}
+
 struct RepositoryContextTests {
     @Test func matchesForkHeadRatherThanBaseRepositoryOrBranchAlone() {
         let context = RepositoryContext(id: "/repo/.git", branch: "feature", revision: "", repositories: ["me/kerf"])
