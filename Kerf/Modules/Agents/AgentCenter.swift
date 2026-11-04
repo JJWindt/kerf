@@ -61,7 +61,14 @@ final class AgentCenter {
     }
 
     private(set) var sessions: [Session] = []
-    private(set) var requests: [Request] = []
+    private(set) var requests: [Request] = [] {
+        didSet {
+            navigation.update(requests.map(\.id))
+            questionDrafts = questionDrafts.filter { navigation.ids.contains($0.key) }
+        }
+    }
+    var navigation = RequestNavigation()
+    var questionDrafts: [UUID: QuestionDraft] = [:]
     @ObservationIgnored private var contextTask: Task<Void, Never>?
     @ObservationIgnored private var isPreview = false
     private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "Kerf", category: "Agents")
@@ -129,6 +136,15 @@ final class AgentCenter {
             GitHubModule.shared.prioritize()
             Hub.shared.refresh()
         }
+    }
+
+    var selectedRequest: Request? {
+        guard !navigation.showsOverview else { return nil }
+        return requests.first { $0.id == navigation.selectedID }
+    }
+
+    func request(for session: Session) -> Request? {
+        requests.first { $0.sessionID == session.id }
     }
 
     func projectLabel(for session: Session) -> String? {
@@ -307,6 +323,7 @@ final class AgentCenter {
             session.subagents.remove(id)
         case .sessionEnd:
             connection?.reply(nil)
+            requests.removeAll { $0.sessionID == sessionID }
             sessions.removeAll { $0.id == sessionID }
             GitHubModule.shared.prioritize()
             Hub.shared.refresh()
@@ -337,6 +354,10 @@ final class AgentCenter {
     }
 
     func answer(_ request: Request, _ reply: AgentReply) {
+        guard requests.contains(where: { $0.id == request.id }) else {
+            logger.debug("Ignoring an answer to a request that is no longer pending.")
+            return
+        }
         if let data = try? JSONEncoder().encode(reply) {
             request.connection?.onClose = nil
             request.connection?.reply(data)
@@ -344,6 +365,8 @@ final class AgentCenter {
         requests.removeAll { $0.id == request.id }
         if let index = sessions.firstIndex(where: { $0.id == request.sessionID }) {
             switch reply.decision {
+            case _ where requests.contains(where: { $0.sessionID == request.sessionID }):
+                sessions[index].state = .waiting
             // A `kerf notify --ask` has no turn that goes on: answered is done.
             case _ where request.agent == .other: sessions[index].state = .idle
             // Handed back to the tool's own window: it still waits on you there.
@@ -353,7 +376,7 @@ final class AgentCenter {
             }
         }
         Hub.shared.refresh()
-        if requests.isEmpty { IslandManager.current?.closeAgents() }
+        if requests.isEmpty, !navigation.showsOverview { IslandManager.current?.closeAgents() }
     }
 
     /// Threads blocked on you: a permission or a question, in the notch or in their own window.
@@ -364,7 +387,15 @@ final class AgentCenter {
 
     /// What the AI page lists: threads that run, wait, or finished since you last looked.
     var visibleThreads: [Session] {
-        sessions.filter { $0.state != .idle || $0.unread }
+        sessions.filter { $0.state != .idle || $0.unread }.sorted {
+            @MainActor func priority(_ session: Session) -> Int {
+                if session.state == .waiting { return 0 }
+                if session.failure != nil || session.needsInput { return 1 }
+                return session.state == .working ? 2 : 3
+            }
+            let left = priority($0), right = priority($1)
+            return left == right ? $0.updated > $1.updated : left < right
+        }
     }
 
     static var showsDone: Bool { UserDefaults.standard.object(forKey: showsDoneKey) as? Bool ?? true }
@@ -465,6 +496,14 @@ final class AgentCenter {
         isPreview = true
         requests = request.map { [$0] } ?? []
         self.sessions = sessions
+        Hub.shared.refresh()
+    }
+
+    func preview(requests: [Request], sessions: [Session]) {
+        isPreview = true
+        self.requests = requests
+        self.sessions = sessions
+        navigation.openOldest()
         Hub.shared.refresh()
     }
 }

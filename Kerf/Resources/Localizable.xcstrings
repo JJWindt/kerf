@@ -21,12 +21,32 @@
         }
       }
     },
+    "Answer…" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Antwoord…"
+          }
+        }
+      }
+    },
     "Review requested" : {
       "localizations" : {
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Review gevraagd"
+          }
+        }
+      }
+    },
+    "Show this thread's decision in Kerf" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toon de beslissing voor deze thread in Kerf"
           }
         }
       }
