@@ -8,7 +8,7 @@ A Dynamic Island for the MacBook notch, built to look and move like Apple's own 
 </p>
 
 - **Music**: whatever plays (Music, Spotify, podcasts) in Apple Music's island card. Scroll over the notch for volume.
-- **Agents**: Claude Code, Codex and Copilot ask for permission or answers in the notch, in full, wherever they run (Terminal, an editor, T3 Code). An orange dot stays until you answer. Opening Kerf shows the pending decision; from the thread list, a waiting thread's Answer pill opens its decision, and half-typed answers stay. With two threads in one repository, each shows its branch. Any other tool can use `kerf notify`.
+- **Agents**: Claude Code and Codex ask for permission or answers in the notch, in full, wherever they run (Terminal, an editor, T3 Code). Copilot's sessions and questions show too; its approvals stay in Copilot, so its Allow All holds. An orange dot stays until you answer. Opening Kerf shows the pending decision; from the thread list, a waiting thread's Answer pill opens its decision, and half-typed answers stay. With two threads in one repository, each shows its branch. Any other tool can use `kerf notify`.
 - **Ask**: ⌥ Space. A question goes to Claude through your own Claude Code, a few words to Google. ⌥⇧ Space asks about the selected text. Drop files or take a screenshot to ask about them; speak instead of typing.
 - **Offload**: put in a camera card, click Offload, pick the drive and the project. Every file is copied, checked with xxHash64, and skipped if the project already has it.
 - **Shelf**: drop files on the notch; they stay 24 hours. AirDrop, share, show in Finder, and a clipboard history.
