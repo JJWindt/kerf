@@ -27,6 +27,7 @@ enum CompactPresentation: Equatable {
     case download(Double?)
     /// DaVinci Resolve renders: film left, percentage right.
     case render(Double)
+    case pullNotice(count: Int, failed: Bool)
 
     /// Short-lived or urgent: shows even where it covers an app's menus.
     var showsOverMenus: Bool {
@@ -53,6 +54,7 @@ enum CompactPresentation: Equatable {
         case .timer: "timer"
         case .download: "download"
         case .render: "render"
+        case .pullNotice: "pullNotice"
         }
     }
 }
@@ -133,6 +135,9 @@ struct CompactView: View {
             Image(systemName: "arrow.down.circle.fill").font(.system(size: 14, weight: .semibold)).foregroundStyle(Color(nsColor: .systemBlue))
         case .render:
             Image(systemName: "film.fill").font(.system(size: 13, weight: .semibold)).foregroundStyle(.white)
+        case .pullNotice:
+            Image(systemName: "arrow.triangle.pull").font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(.white.opacity(0.8))
         case nil:
             EmptyView()
         }
@@ -182,6 +187,15 @@ struct CompactView: View {
             .font(.system(size: 12, weight: .semibold).monospacedDigit()).foregroundStyle(Color(nsColor: .systemOrange))
             .lineLimit(1).minimumScaleFactor(0.7)
             .frame(width: 38)
+        case .pullNotice(let count, let failed):
+            HStack(spacing: 3) {
+                Image(systemName: failed ? "exclamationmark.circle.fill" : "text.bubble.fill")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(Color(nsColor: failed ? .systemRed : .systemOrange))
+                if count > 1 { Text(verbatim: "\(count)").font(.system(size: 11, weight: .semibold)) }
+            }
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(Text("Pull requests to look at: \(count)"))
         case nil:
             EmptyView()
         }
