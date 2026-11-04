@@ -8,12 +8,12 @@ A Dynamic Island for the MacBook notch, built to look and move like Apple's own 
 </p>
 
 - **Music**: whatever plays (Music, Spotify, podcasts) in Apple Music's island card. Scroll over the notch for volume.
-- **Agents**: Claude Code and Codex ask for permission or answers in the notch, in full, wherever they run (Terminal, an editor, T3 Code). Copilot's sessions and questions show too; its approvals stay in Copilot, so its Allow All holds. An orange dot stays until you answer. Any other tool can use `kerf notify`.
+- **Agents**: Claude Code and Codex ask for permission or answers in the notch, in full, wherever they run (Terminal, an editor, T3 Code). Copilot's sessions and questions show too; its approvals stay in Copilot, so its Allow All holds. An orange dot stays until you answer. With two threads in one repository, each shows its branch. Any other tool can use `kerf notify`.
 - **Ask**: ⌥ Space. A question goes to Claude through your own Claude Code, a few words to Google. ⌥⇧ Space asks about the selected text. Drop files or take a screenshot to ask about them; speak instead of typing.
 - **Offload**: put in a camera card, click Offload, pick the drive and the project. Every file is copied, checked with xxHash64, and skipped if the project already has it.
 - **Shelf**: drop files on the notch; they stay 24 hours. AirDrop, share, show in Finder, and a clipboard history.
 - **Today**: your calendar with a join button for calls, the weather and rain, timers.
-- **GitHub**: pull requests, CI, issues and a repo's files, through `gh`.
+- **GitHub**: pull requests, CI, issues and a repo's files, through `gh`. Your PRs and review requests also show under the threads, the ones a thread works on first; a quiet alert in the notch when checks newly fail or a reviewer asks for changes.
 - **Camera** mirror, **volume and brightness** in the notch, AirPods and charging, downloads, DaVinci Resolve renders.
 
 ## Install

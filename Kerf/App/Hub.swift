@@ -16,7 +16,7 @@ final class Hub {
     /// The page to open on when something asks for attention.
     var attentionPage: IslandPage? {
         // A waiting agent, or a thread's notice: the AI page lists them, a click opens the chat.
-        if agentWaiting || !AgentCenter.shared.notices.isEmpty { return .agents }
+        if agentWaiting || !AgentCenter.shared.notices.isEmpty || GitHubModule.shared.attentionCount > 0 { return .agents }
         if OffloadModule.shared.isActive { return .offload }
         // Clicking what the compact island shows opens its page, as tapping a Live Activity does.
         return switch presentation {
@@ -80,7 +80,10 @@ final class Hub {
         let busy: CompactPresentation? = level ?? banner ?? offload.compactPresentation ?? TimerModule.shared.compactPresentation
             ?? RenderWatcher.shared.compactPresentation ?? DownloadsWatcher.shared.compactPresentation
         let waitingAgent: CompactPresentation? = waiting.first.map { .agent(agent: $0.agent, hostPath: $0.hostPath) }
-        let new = busy ?? notice ?? NowPlayingModule.shared.compactPresentation ?? waitingAgent
+        let pulls = GitHubModule.shared
+        let pullNotice: CompactPresentation? = pulls.attentionCount > 0
+            ? .pullNotice(count: pulls.attentionCount, failed: pulls.hasFailedChecks) : nil
+        let new = busy ?? notice ?? pullNotice ?? NowPlayingModule.shared.compactPresentation ?? waitingAgent
         if presentation != new { presentation = new }
         observers.forEach { $0() }
     }

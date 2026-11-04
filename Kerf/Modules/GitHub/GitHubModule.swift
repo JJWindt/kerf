@@ -36,12 +36,19 @@ final class GitHubModule {
     var folder = ""
     private(set) var isLoading = false
     private(set) var problem: String?
-    /// Your GitHub login, for the pull request search; asked once.
+    /// What changed on your PRs since you last looked: failed checks, requested changes.
+    private(set) var attention = GitHub.Attention()
+    /// Your GitHub login, for the pull request search; checked on every refresh, as the alerts
+    /// are per account.
     @ObservationIgnored private var login: String?
+    @ObservationIgnored private var pollTask: Task<Void, Never>?
     @ObservationIgnored private var loadedAt = Date.distantPast
 
     nonisolated static var executable: String? {
-        ["/opt/homebrew/bin/gh", "/usr/local/bin/gh"].first { FileManager.default.isExecutableFile(atPath: $0) }
+        let home = FileManager.default.homeDirectoryForCurrentUser.path
+        let paths = (ProcessInfo.processInfo.environment["PATH"] ?? "").split(separator: ":").map { "\($0)/gh" }
+        return (["/opt/homebrew/bin/gh", "/usr/local/bin/gh", "\(home)/.local/bin/gh"] + paths)
+            .first { FileManager.default.isExecutableFile(atPath: $0) }
     }
 
     /// Runs `gh` off the main thread.
@@ -79,20 +86,16 @@ final class GitHubModule {
             return
         }
         isLoading = true
-        if login == nil, let data = await Self.gh(["api", "user", "--jq", ".login"]) {
-            login = String(decoding: data, as: UTF8.self).trimmingCharacters(in: .whitespacesAndNewlines)
-        }
-        async let pulls = Self.searchPulls(login.map { GitHub.searchQuery(login: $0) })
+        await refreshPulls()
         async let issues = Self.gh(["search", "issues", "--assignee", "@me", "--state", "open", "--json", "number,title,repository,url,updatedAt", "--limit", "8"])
         async let repos = Self.gh(["repo", "list", "--limit", "100", "--json", "nameWithOwner,pushedAt,isPrivate"])
-        let (p, i, r) = await (pulls, issues, repos)
+        let (i, r) = await (issues, repos)
         guard let r else {
             problem = String(localized: "gh isn't signed in. Run gh auth login in Terminal.")
             isLoading = false
             return
         }
         problem = nil
-        self.pulls = p.flatMap(GitHub.pulls(fromSearch:)) ?? []
         self.issues = i.flatMap { GitHub.decode([GitHub.Item].self, from: $0) } ?? []
         self.repos = (GitHub.decode([GitHub.Repo].self, from: r) ?? []).sorted { ($0.pushedAt ?? .distantPast) > ($1.pushedAt ?? .distantPast) }
         if repo == nil { repo = self.repos.first }
@@ -114,6 +117,76 @@ final class GitHubModule {
         if tab == .files { await loadTree() }
         if tab == .branches { await loadGraph() }
         IslandManager.current?.refit()
+    }
+
+    /// Your PRs every two minutes while Kerf runs, so a failed check reaches the notch.
+    func start() {
+        guard pollTask == nil else { return }
+        pollTask = Task {
+            while !Task.isCancelled {
+                await refreshPulls()
+                try? await Task.sleep(for: .seconds(120))
+            }
+        }
+    }
+
+    /// Your open PRs and the ones asking you for a review, the ones a thread works on first. A
+    /// failed fetch keeps the last list.
+    func refreshPulls() async {
+        guard let data = await Self.gh(["api", "user", "--jq", ".login"]) else { return }
+        let current = String(decoding: data, as: UTF8.self).trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !current.isEmpty else { return }
+        if current != login {
+            // Another account: its own PRs and its own alert history.
+            login = current
+            pulls = []
+            attention = UserDefaults.standard.data(forKey: attentionKey)
+                .flatMap { try? JSONDecoder().decode(GitHub.Attention.self, from: $0) } ?? GitHub.Attention()
+        }
+        guard let authored = await Self.searchAll(login: current, reviews: false),
+              let reviews = await Self.searchAll(login: current, reviews: true) else { return }
+        let requested = reviews.filter { review in !authored.contains { $0.id == review.id } }.map { pull in
+            var pull = pull
+            pull.reviewRequested = true
+            return pull
+        }
+        // Alerts are for your own PRs: a review request shows in the list, it doesn't call.
+        attention.update(authored)
+        saveAttention()
+        pulls = authored + requested
+        prioritize()
+        Hub.shared.refresh()
+        IslandManager.current?.refit()
+    }
+
+    /// Every page of one pull request search.
+    nonisolated static func searchAll(login: String, reviews: Bool) async -> [GitHub.Item]? {
+        var found: [GitHub.Item] = []
+        var cursor: String?
+        var seen: Set<String> = []
+        repeat {
+            guard let data = await searchPulls(GitHub.searchQuery(login: login, cursor: cursor, reviews: reviews)),
+                  let page = GitHub.page(fromSearch: data) else { return nil }
+            found += page.pulls
+            cursor = page.nextCursor
+            if let cursor, !seen.insert(cursor).inserted { return nil }
+        } while cursor != nil
+        return found
+    }
+
+    var attentionCount: Int { attention.unread.count }
+    var hasFailedChecks: Bool { attention.unread.values.contains(where: \.checksFailed) }
+    func needsAttention(_ pull: GitHub.Item) -> Bool { attention.unread[pull.id] != nil }
+
+    /// PRs a thread works on (its repository and branch) first.
+    func prioritize() {
+        pulls = GitHub.prioritized(pulls, contexts: AgentCenter.shared.visibleThreads.compactMap(\.repository))
+    }
+
+    private var attentionKey: String { "github.pullAttention.\(login ?? "")" }
+
+    private func saveAttention() {
+        UserDefaults.standard.set(try? JSONEncoder().encode(attention), forKey: attentionKey)
     }
 
     /// The tab's own data, the first time it shows.
@@ -180,13 +253,24 @@ final class GitHubModule {
         IslandManager.current?.refit()
     }
 
-    /// Lab only.
-    func preview(pulls: [GitHub.Item]) {
-        self.pulls = pulls
+    /// Lab only; no gh calls or saved alert history. `changed` is a later fetch of the same PRs.
+    func preview(pulls: [GitHub.Item], changed: [GitHub.Item]? = nil) {
+        attention = GitHub.Attention()
+        attention.update(pulls.filter { $0.reviewRequested != true })
+        if let changed { attention.update(changed.filter { $0.reviewRequested != true }) }
+        self.pulls = changed ?? pulls
+        prioritize()
         loadedAt = .now
+        Hub.shared.refresh()
     }
 
+    /// Opening a PR is looking at it: its alert goes.
     func open(_ link: String) {
-        if let url = URL(string: link) { NSWorkspace.shared.open(url) }
+        guard let url = URL(string: link) else { return }
+        NSWorkspace.shared.open(url)
+        guard attention.unread[link] != nil else { return }
+        attention.acknowledge(link)
+        saveAttention()
+        Hub.shared.refresh()
     }
 }

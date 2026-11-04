@@ -50,6 +50,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         NowPlayingModule.shared.start()
         AgentCenter.shared.start()
         OffloadModule.shared.start()
+        GitHubModule.shared.start()
         AskModule.shared.start()
         ShelfModule.shared.start()
         MediaKeys.shared.startWhenTrusted()

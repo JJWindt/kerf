@@ -21,6 +21,36 @@
         }
       }
     },
+    "Review requested" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Review gevraagd"
+          }
+        }
+      }
+    },
+    "Needs your attention" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Heeft je aandacht nodig"
+          }
+        }
+      }
+    },
+    "Pull requests to look at: %lld" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pull requests om te bekijken: %lld"
+          }
+        }
+      }
+    },
     "%@ · %@" : {
       "localizations" : {
         "nl" : {
