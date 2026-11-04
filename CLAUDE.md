@@ -22,6 +22,18 @@ questions, and an Ask field. macOS 26.
 - The user has no admin rights: install to `~/Applications`, never `/Applications`; no Homebrew.
 - Signing is ad hoc ("Sign to Run Locally"); bundle ID `nl.jjwindt.kerf`.
 
+## Branches
+
+- `main` mirrors Paul's `main` (`upstream`, paultje1900/kerf). Never commit to it; sync with
+  `git fetch upstream && git push origin upstream/main:main`.
+- `v1-agentic` is the user's own build: Paul's `main` minus the removed features, plus personal
+  preferences. It is what gets installed. Bring Paul's changes in by merging `main`, never by
+  rebasing (no force-pushes). When a merged PR was ported from this branch, conflicts resolve to
+  this branch's version.
+- A change Paul might want starts on a `feature/…` or `fix/…` branch cut from `main` (worktree
+  `~/Code/kerf-upstream`) and goes to him as one PR per change. After he merges it, sync `main`
+  and merge it into `v1-agentic`. Changes only the user wants go straight into `v1-agentic`.
+
 ## Build, test, install
 
 ```bash
