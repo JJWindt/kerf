@@ -71,6 +71,7 @@ git checkout upstream/main -- Kerf/Modules/Music
 | A turn that ended on an API error (rate limit, overloaded, …) shows as stopped, with a red triangle in the notch instead of the tick | `StopFailure` hook, `Session.failure`, `Compact.swift` |
 | CI and reviews on your pull requests: "Checks failed", "Changes requested", "Checks running" | `GitHub.searchQuery`, `PullRequests.refresh`, `PullDetails` |
 | The island stays in the MacBook's notch; floating islands on other displays are off by default | `Preferences.swift`, `IslandManager.currentController` |
+| Copilot approvals stay in Copilot/VS Code, so Kerf does not add a confirmation on top of Allow All. Its session, notification and question-tracking hooks stay connected. Cached permission hooks from older sessions return no decision immediately; Claude permissions are unchanged. | `HookInstaller`, `CommandLineTool.hook`, `AgentSettings` |
 
 ## Wishlist
 

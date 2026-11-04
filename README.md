@@ -17,7 +17,7 @@ See [FEATURES.md](FEATURES.md) for what this fork keeps and what it left out.
 - **Done notices**: a tick in the notch when a session finishes, until you look.
 - **Pull requests**: your open PRs under the threads, through `gh`.
 - **Ask**: ⌥ Space. A question goes to Claude through your own Claude Code, a few words to Google.
-- **Copilot** works too, and any script can use `kerf notify`.
+- **Copilot** sessions and waiting questions appear too. Its permission approvals stay in Copilot or VS Code, so Kerf does not override Allow All. Any script can use `kerf notify`.
 
 ## Install
 

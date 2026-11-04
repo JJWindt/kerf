@@ -1,6 +1,16 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Copilot permissions stay in Copilot or VS Code, respecting its approval settings. Kerf still shows its sessions and waiting questions." : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copilot-toestemmingen blijven in Copilot of VS Code, volgens de ingestelde goedkeuringen. Kerf toont nog steeds de sessies en wachtende vragen."
+          }
+        }
+      }
+    },
     "%@ · %@" : {
       "localizations" : {
         "nl" : {
