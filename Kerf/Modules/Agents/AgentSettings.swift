@@ -39,6 +39,7 @@ struct AgentSettings: View {
                 Text("Questions from coding agents")
             } footer: {
                 Text("Kerf asks you in the notch and passes your answer back. If Kerf isn't running, the tool asks as it always does.")
+                Text("Copilot permissions stay in Copilot or VS Code, respecting its approval settings. Kerf still shows its sessions and waiting questions.")
             }
             .id(refresh)
 
