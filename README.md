@@ -15,7 +15,8 @@ See [FEATURES.md](FEATURES.md) for what this fork keeps and what it left out.
 - **Questions**: Claude's multiple-choice questions (AskUserQuestion) as buttons, with a field for another answer.
 - **Threads**: every Claude Code session, working, waiting or done, with its project. A click opens the app it runs in.
 - **Done notices**: a tick in the notch when a session finishes, until you look.
-- **Pull requests**: your open PRs under the threads, through `gh`.
+- **Branches**: shown when multiple visible sessions share a repository, including on permission cards.
+- **Pull requests**: your open PRs and review requests through `gh`, session-linked ones first. Refreshes every two minutes, with quiet alerts for newly failed checks and requested changes on your own PRs. The first fetch is silent; opening a PR acknowledges its alert.
 - **Ask**: ⌥ Space. A question goes to Claude through your own Claude Code, a few words to Google.
 - **Copilot** sessions and waiting questions appear too. Its permission approvals stay in Copilot or VS Code, so Kerf does not override Allow All. Any script can use `kerf notify`.
 

@@ -20,7 +20,7 @@ struct AgentsPage: View {
                 }
                 .id(request.id)
             } else {
-                Overview(threads: center.visibleThreads, pulls: Array(github.pulls.prefix(3)))
+                Overview(threads: center.visibleThreads, pulls: github.pulls)
             }
         }
         // Finished threads stay until you click them or carries on in their chat.
@@ -56,6 +56,16 @@ struct Overview: View {
     let pulls: [GitHub.Item]
 
     var body: some View {
+        VStack(spacing: ui(6)) {
+            if let error = PullRequests.shared.failure {
+                Text(verbatim: error).font(.page(12)).foregroundStyle(Color(nsColor: .systemOrange))
+                    .padding(.horizontal, ui(20))
+            }
+            content
+        }
+    }
+
+    @ViewBuilder private var content: some View {
         if threads.isEmpty, pulls.isEmpty {
             VStack(spacing: ui(6)) {
                 Image(systemName: "apple.intelligence").font(.page(22, weight: .semibold))
@@ -83,6 +93,10 @@ struct Overview: View {
                                     PullDetails(pull: pull).font(.page(11))
                                 }
                                 Spacer()
+                                if PullRequests.shared.needsAttention(pull) {
+                                    Circle().fill(Color(nsColor: .systemOrange)).frame(width: ui(6), height: ui(6))
+                                        .accessibilityLabel(Text("Needs your attention"))
+                                }
                                 if let date = pull.updatedAt {
                                     Text(date, format: .relative(presentation: .numeric, unitsStyle: .narrow))
                                         .font(.page(11)).foregroundStyle(.white.opacity(0.4))
@@ -117,7 +131,9 @@ struct PullDetails: View {
     }
 
     private var status: Text? {
-        if pull.checks == .failing {
+        if pull.reviewRequested == true {
+            Text("Review requested").foregroundStyle(.white.opacity(0.5))
+        } else if pull.checks == .failing {
             Text("Checks failed").foregroundStyle(Color(nsColor: .systemRed))
         } else if pull.changesRequested == true {
             Text("Changes requested").foregroundStyle(Color(nsColor: .systemOrange))
@@ -177,7 +193,7 @@ struct ThreadRow: View {
         if session.state != .idle, !session.subagents.isEmpty {
             parts.append(session.subagents.count == 1 ? String(localized: "1 subagent") : String(localized: "\(session.subagents.count) subagents"))
         }
-        if let project = session.project { parts.append(project) }
+        if let project = AgentCenter.shared.projectLabel(for: session) { parts.append(project) }
         return parts.joined(separator: " · ")
     }
 
@@ -302,7 +318,7 @@ struct PermissionCard: View {
             }
             .padding(.bottom, ui(6))
             Text(verbatim: request.name).font(.page(16, weight: .semibold))
-            Text(verbatim: [request.project, String(localized: summary.title)].compactMap { $0 }.joined(separator: " · "))
+            Text(verbatim: [AgentCenter.shared.projectLabel(for: request), String(localized: summary.title)].compactMap { $0 }.joined(separator: " · "))
                 .font(.page(14)).foregroundStyle(.white.opacity(0.55))
                 .padding(.bottom, ui(10))
             CappedScroll(maxHeight: ui(190)) {
@@ -376,7 +392,7 @@ struct QuestionCard: View {
             HStack(spacing: ui(8)) {
                 AgentMark(agent: request.agent, hostPath: request.hostPath, size: ui(22))
                 Text(verbatim: request.name).font(.page(14, weight: .semibold))
-                if let project = request.project {
+                if let project = AgentCenter.shared.projectLabel(for: request) {
                     Text(verbatim: project).font(.page(14)).foregroundStyle(.white.opacity(0.55))
                 }
                 Spacer()

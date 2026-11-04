@@ -14,7 +14,7 @@ final class Hub {
     /// The page to open on when something asks for attention.
     var attentionPage: IslandPage? {
         // A waiting agent, or a thread's notice: the AI page lists them, a click opens the chat.
-        if agentWaiting || !AgentCenter.shared.notices.isEmpty { return .agents }
+        if agentWaiting || !AgentCenter.shared.notices.isEmpty || PullRequests.shared.attentionCount > 0 { return .agents }
         return nil
     }
     /// A short message on top of everything for a few seconds.
@@ -51,7 +51,11 @@ final class Hub {
                                   needsInput: notices.contains(where: \.needsInput), failed: notices.contains { $0.failure != nil })
         }
         let waitingAgent: CompactPresentation? = waiting.first.map { .agent(agent: $0.agent, hostPath: $0.hostPath) }
-        let new = banner ?? notice ?? waitingAgent
+        let pulls = PullRequests.shared
+        let pullNotice: CompactPresentation? = pulls.attentionCount > 0
+            ? .pullNotice(count: pulls.attentionCount, failed: pulls.hasFailedChecks) : nil
+        let urgentNotice = notices.contains(where: \.needsInput) ? notice : nil
+        let new = banner ?? waitingAgent ?? urgentNotice ?? pullNotice ?? notice
         if presentation != new { presentation = new }
         observers.forEach { $0() }
     }

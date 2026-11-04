@@ -11,6 +11,76 @@
         }
       }
     },
+    "Review requested" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Review gevraagd"
+          }
+        }
+      }
+    },
+    "Needs your attention" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Heeft je aandacht nodig"
+          }
+        }
+      }
+    },
+    "GitHub CLI isn't installed. Pull requests are unavailable." : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GitHub CLI is niet geïnstalleerd. Pull requests zijn niet beschikbaar."
+          }
+        }
+      }
+    },
+    "Couldn't refresh pull requests. Check GitHub CLI sign-in and connection." : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pull requests konden niet worden vernieuwd. Controleer je GitHub CLI-aanmelding en verbinding."
+          }
+        }
+      }
+    },
+    "Couldn't save pull request alerts." : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meldingen voor pull requests konden niet worden opgeslagen."
+          }
+        }
+      }
+    },
+    "Couldn't open the pull request." : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De pull request kon niet worden geopend."
+          }
+        }
+      }
+    },
+    "Pull requests to look at: %lld" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pull requests om te bekijken: %lld"
+          }
+        }
+      }
+    },
     "%@ · %@" : {
       "localizations" : {
         "nl" : {

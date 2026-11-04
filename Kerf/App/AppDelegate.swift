@@ -38,6 +38,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         islands.start()
         AgentCenter.shared.start()
+        PullRequests.shared.start()
         AskModule.shared.start()
         hotKeys = [
             HotKey(keyCode: HotKey.space, modifiers: .option) { [weak self] in self?.islands.openAsk() },

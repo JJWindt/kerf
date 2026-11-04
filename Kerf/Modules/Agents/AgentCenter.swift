@@ -1,6 +1,7 @@
 import AppKit
 import ApplicationServices
 import KerfKit
+import OSLog
 import SwiftUI
 
 /// Claude Code, Copilot and anything using `kerf notify`: their sessions, and the
@@ -44,6 +45,7 @@ final class AgentCenter {
         var subagents: Set<String> = []
         /// The turn ended on an API error (`rate_limit`, `overloaded`, …) instead of finishing.
         var failure: String?
+        var repository: RepositoryContext?
     }
 
     struct Request: Identifiable {
@@ -60,6 +62,9 @@ final class AgentCenter {
 
     private(set) var sessions: [Session] = []
     private(set) var requests: [Request] = []
+    @ObservationIgnored private var contextTask: Task<Void, Never>?
+    @ObservationIgnored private var isPreview = false
+    private let logger = Logger(subsystem: "nl.jjwindt.kerf", category: "Agents")
     @ObservationIgnored private var server: UnixSocketServer?
 
     static let showsDoneKey = "agents.showsDone"
@@ -90,11 +95,52 @@ final class AgentCenter {
     /// At launch and when the AI page opens; hooks tell the rest.
     /// Also once a minute, to let go of threads whose window was closed without a SessionEnd.
     func findRunning() {
+        guard !isPreview else { return }
         Task.detached(priority: .utility) {
             let found = RunningThreads.claudeCode()
             let terminals = RunningThreads.liveTerminals()
             await MainActor.run { AgentCenter.shared.merge(found, terminals: terminals) }
         }
+        refreshRepositories()
+    }
+
+    func refreshRepositories() {
+        guard !isPreview, contextTask == nil else { return }
+        let directories = Set(sessions.compactMap(\.cwd))
+        contextTask = Task {
+            let results = await Task.detached(priority: .utility) {
+                directories.map { directory in
+                    (directory, Result { try RepositoryContext.read(at: directory) })
+                }
+            }.value
+            for (directory, result) in results {
+                switch result {
+                case .success(let context):
+                    for index in sessions.indices where sessions[index].cwd == directory {
+                        sessions[index].repository = context
+                    }
+                case .failure(let error):
+                    for index in sessions.indices where sessions[index].cwd == directory {
+                        sessions[index].repository = nil
+                    }
+                    logger.error("Repository context: \(error.localizedDescription, privacy: .public)")
+                }
+            }
+            contextTask = nil
+            PullRequests.shared.prioritize()
+            Hub.shared.refresh()
+        }
+    }
+
+    func projectLabel(for session: Session) -> String? {
+        guard let project = session.project else { return nil }
+        guard let context = session.repository,
+              RepositoryContext.needsBranch(context, among: visibleThreads.compactMap(\.repository)) else { return project }
+        return "\(project) · \(context.label)"
+    }
+
+    func projectLabel(for request: Request) -> String? {
+        sessions.first { $0.id == request.sessionID }.flatMap { projectLabel(for: $0) } ?? request.project
     }
 
     private func merge(_ found: [RunningThreads.Found], terminals: Set<String>) {
@@ -124,6 +170,7 @@ final class AgentCenter {
         next.sort { $0.updated > $1.updated }
         guard next != sessions else { return }
         sessions = next
+        refreshRepositories()
         Hub.shared.refresh()
     }
 
@@ -259,6 +306,7 @@ final class AgentCenter {
         case .sessionEnd:
             connection?.reply(nil)
             sessions.removeAll { $0.id == sessionID }
+            PullRequests.shared.prioritize()
             Hub.shared.refresh()
             return
         case .promptSubmitted(let prompt):
@@ -278,6 +326,11 @@ final class AgentCenter {
         }
         // Newest first, nothing older than a day.
         sessions = sessions.filter { $0.updated > .now.addingTimeInterval(-86_400) }.sorted { $0.updated > $1.updated }
+        switch event {
+        case .sessionStart, .promptSubmitted: refreshRepositories()
+        default: if isNew { refreshRepositories() }
+        }
+        PullRequests.shared.prioritize()
         Hub.shared.refresh()
     }
 
@@ -326,6 +379,7 @@ final class AgentCenter {
         guard let index = sessions.firstIndex(where: { $0.id == id }), sessions[index].unread else { return }
         sessions[index].unread = false
         sessions[index].needsInput = false
+        PullRequests.shared.prioritize()
         Hub.shared.refresh()
     }
 
@@ -408,6 +462,7 @@ final class AgentCenter {
 
     /// Lab only.
     func preview(_ request: Request?, sessions: [Session]) {
+        isPreview = true
         requests = request.map { [$0] } ?? []
         self.sessions = sessions
         Hub.shared.refresh()

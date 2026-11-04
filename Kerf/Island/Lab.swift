@@ -92,7 +92,26 @@ struct Lab {
             previewPulls()
             controller.open(page: .agents)
         },
+        "pull-alert": { _ in
+            AgentCenter.shared.preview(nil, sessions: [])
+            previewPullAlert()
+        },
+        "pull-alert-open": { controller in
+            AgentCenter.shared.preview(nil, sessions: [])
+            previewPullAlert()
+            controller.open(page: .agents)
+        },
     ]
+
+    static func previewPullAlert() {
+        previewPulls()
+        var baseline = PullRequests.shared.pulls
+        for index in baseline.indices {
+            baseline[index].checks = .passing
+            baseline[index].changesRequested = false
+        }
+        PullRequests.shared.preview(pulls: baseline, changed: PullRequests.shared.pulls)
+    }
 
     static let terminal = "/System/Applications/Utilities/Terminal.app"
 
@@ -116,7 +135,7 @@ struct Lab {
     }
 
     static func previewPulls() {
-        let json = #"[{"number":42,"title":"Kerf: AI tab with threads","repository":{"nameWithOwner":"octocat/kerf"},"url":"https://github.com/octocat/kerf/pull/42","updatedAt":"2026-10-31T10:00:00Z","isDraft":false,"checks":"failing"},{"number":17,"title":"Weekly summary in Tempo","repository":{"nameWithOwner":"octocat/tempo"},"url":"https://github.com/octocat/tempo/pull/17","updatedAt":"2026-10-30T18:00:00Z","isDraft":true,"checks":"pending","changesRequested":true}]"#
+        let json = #"[{"number":42,"title":"Kerf: AI tab with threads","repository":{"nameWithOwner":"octocat/kerf"},"url":"https://github.com/octocat/kerf/pull/42","updatedAt":"2026-10-31T10:00:00Z","isDraft":false,"checks":"failing"},{"number":17,"title":"Weekly summary in Tempo","repository":{"nameWithOwner":"octocat/tempo"},"url":"https://github.com/octocat/tempo/pull/17","updatedAt":"2026-10-30T18:00:00Z","isDraft":true,"checks":"pending","changesRequested":true},{"number":8,"title":"Dark mode for the dashboard","repository":{"nameWithOwner":"octocat/atlas"},"url":"https://github.com/octocat/atlas/pull/8","updatedAt":"2026-11-01T09:00:00Z","isDraft":false,"checks":"passing","reviewRequested":true}]"#
         PullRequests.shared.preview(pulls: GitHub.decode([GitHub.Item].self, from: Data(json.utf8)) ?? [])
     }
 

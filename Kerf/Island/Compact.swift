@@ -12,11 +12,13 @@ enum CompactPresentation: Equatable {
     /// Threads finished or asking in their own window: the newest's mark left, a tick (or a
     /// bubble) right, with how many when more than one. Stays until you click or look.
     case agentNotice(agent: AgentKind, hostPath: String?, count: Int, needsInput: Bool, failed: Bool)
+    case pullNotice(count: Int, failed: Bool)
 
     /// Short-lived or urgent: shows even where it covers an app's menus.
     var showsOverMenus: Bool {
         switch self {
         case .banner, .agent, .agentNotice: true
+        case .pullNotice: false
         }
     }
 
@@ -30,6 +32,7 @@ enum CompactPresentation: Equatable {
         case .banner(let leading, let trailing): "banner.\(leading.id).\(trailing.id)"
         case .agent: "agent"
         case .agentNotice: "agentNotice"
+        case .pullNotice: "pullNotice"
         }
     }
 }
@@ -89,6 +92,9 @@ struct CompactView: View {
             AgentMark(agent: agent, hostPath: hostPath, size: 18)
         case .agentNotice(let agent, let hostPath, _, _, _):
             AgentMark(agent: agent, hostPath: hostPath, size: 18)
+        case .pullNotice:
+            Image(systemName: "arrow.triangle.pull").font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(.white.opacity(0.8))
         case nil:
             EmptyView()
         }
@@ -113,6 +119,15 @@ struct CompactView: View {
             }
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(Text("Threads to look at: \(count)"))
+        case .pullNotice(let count, let failed):
+            HStack(spacing: 3) {
+                Image(systemName: failed ? "exclamationmark.circle.fill" : "text.bubble.fill")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(Color(nsColor: failed ? .systemRed : .systemOrange))
+                if count > 1 { Text(verbatim: "\(count)").font(.system(size: 11, weight: .semibold)) }
+            }
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(Text("Pull requests to look at: \(count)"))
         case nil:
             EmptyView()
         }

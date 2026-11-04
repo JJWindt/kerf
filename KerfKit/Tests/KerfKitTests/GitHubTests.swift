@@ -31,6 +31,8 @@ struct GitHubSearchTests {
         #expect(pulls[0].updatedAt != nil)
         #expect(pulls[1].checks == nil)
         #expect(pulls[1].isDraft == true)
-        #expect(GitHub.searchQuery(login: "JJWindt").contains("involves:JJWindt"))
+        #expect(GitHub.searchQuery(login: "JJWindt").contains("author:JJWindt"))
+        #expect(!GitHub.searchQuery(login: "JJWindt").contains("involves:"))
+        #expect(GitHub.searchQuery(login: "JJWindt", reviews: true).contains("review-requested:JJWindt"))
     }
 }

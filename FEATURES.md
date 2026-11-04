@@ -73,6 +73,9 @@ git checkout upstream/main -- Kerf/Modules/Music
 | The island stays in the MacBook's notch; floating islands on other displays are off by default | `Preferences.swift`, `IslandManager.currentController` |
 | Maximized windows (including Chrome below the notch) no longer hide the island. Full screen is told apart through Accessibility when available, otherwise by the Dock: a full-screen space doesn't show it. | `MenuBarScan`, `WindowVisibility`, `IslandManager` |
 | Copilot approvals stay in Copilot/VS Code, so Kerf does not add a confirmation on top of Allow All. Its session, notification and question-tracking hooks stay connected. Cached permission hooks from older sessions return no decision immediately; Claude permissions are unchanged. | `HookInstaller`, `CommandLineTool.hook`, `AgentSettings` |
+| Branch labels appear on threads and request cards only when multiple visible sessions share a repository. Git worktrees share the main repository's identity; detached heads show their short commit instead. Context is refreshed off the main thread at discovery, new prompts and the minute scan. | `RepositoryContext`, `AgentCenter.projectLabel` |
+| Your open PRs and the ones asking you for a review, paginated through `gh`, with session-linked PRs first (matched by head repository and branch, including forks). Refreshes every two minutes while Kerf runs. Failed refreshes keep the last list and show an error. | `GitHub`, `PullRequests` |
+| Quiet notch alerts when checks newly fail or a review requests changes. The first successful fetch establishes a silent baseline; subsequent transitions are remembered per GitHub account across restarts. Clicking the PR acknowledges it; recovery or closure clears its alert. Unchanged refreshes do not alert again. | `GitHub.Attention`, `PullRequests`, `Hub`, `Compact.swift` |
 
 ## Wishlist
 
