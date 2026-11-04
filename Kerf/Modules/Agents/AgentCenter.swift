@@ -153,6 +153,7 @@ final class AgentCenter {
                 "accessibility": .bool(AXIsProcessTrusted()),
                 "mediaKeys": .bool(MediaKeys.shared.isRunning),
                 "mixer": .string(AppMixer.shared.channels.map { "\($0.name) \(Int($0.gain * 100))%\($0.isPlaying ? " playing" : "")" }.joined(separator: ", ")),
+                "islands": .array(IslandManager.current?.displayVisibility ?? []),
                 "waiting": .number(Double(requests.count)),
                 "list": .array(visibleThreads.map { session in
                     .object([

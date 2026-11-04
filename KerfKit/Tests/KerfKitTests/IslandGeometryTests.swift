@@ -44,6 +44,39 @@ struct MenuBarRoomTests {
         #expect(MenuBarRoom.fits(wings: 40, in: room))
     }
 
+    struct WindowVisibilityTests {
+        let display = CGRect(x: 0, y: 0, width: 1512, height: 982)
+
+        @Test func maximizedChromeDoesNotHideTheIsland() {
+            let chrome = CGRect(x: 0, y: 33, width: 1512, height: 949)
+            #expect(!WindowVisibility.hidesIsland(window: chrome, display: display, isFullScreen: nil))
+            #expect(!WindowVisibility.hidesIsland(window: chrome, display: display, isFullScreen: false))
+        }
+
+        @Test func trueFullScreenBelowTheNotchStillHides() {
+            let fullScreen = CGRect(x: 0, y: 32, width: 1512, height: 950)
+            #expect(WindowVisibility.hidesIsland(window: fullScreen, display: display, isFullScreen: true))
+            // Without Accessibility: a full-screen space has no Dock.
+            #expect(WindowVisibility.hidesIsland(window: fullScreen, display: display, notch: 32, isFullScreen: nil, dockShown: false))
+            #expect(!WindowVisibility.hidesIsland(window: fullScreen, display: display, notch: 32, isFullScreen: nil, dockShown: true))
+        }
+
+        @Test func fallbackRequiresTheWholeDisplay() {
+            #expect(WindowVisibility.hidesIsland(window: display, display: display, isFullScreen: nil))
+            #expect(!WindowVisibility.hidesIsland(window: display, display: display, isFullScreen: false))
+            let normal = CGRect(x: 60, y: 100, width: 1000, height: 700)
+            #expect(!WindowVisibility.hidesIsland(window: normal, display: display, isFullScreen: nil))
+        }
+
+        @Test func otherDisplaysAreIndependent() {
+            let external = CGRect(x: -1920, y: -1080, width: 1920, height: 1080)
+            #expect(!WindowVisibility.hidesIsland(window: external, display: display, isFullScreen: true))
+            #expect(WindowVisibility.hidesIsland(window: external, display: external, isFullScreen: nil))
+            let maximized = CGRect(x: -1920, y: -1055, width: 1920, height: 1055)
+            #expect(!WindowVisibility.hidesIsland(window: maximized, display: external, isFullScreen: nil))
+        }
+    }
+
     @Test func manyMenusRunUpToTheNotch() {
         // DaVinci Resolve: "Fusion" ends 4 pt before the notch, "Color" starts 6 pt after it.
         let resolve = [CGRect(x: 580, y: 0, width: 79, height: 24), CGRect(x: 854, y: 0, width: 60, height: 24)]
