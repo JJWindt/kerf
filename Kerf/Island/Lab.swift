@@ -318,6 +318,11 @@ struct Lab {
             let items = (scan.menuItems ?? []).filter { abs($0.minY - display.minY) < 2 } + scan.statusItems(on: display)
             var lines = (scan.menuItems ?? []).map { "menu \(Int($0.minX))...\(Int($0.maxX)) y \(Int($0.minY))" }
             lines += scan.statusItems(on: display).map { "status \(Int($0.minX))...\(Int($0.maxX))" }
+            lines += scan.windows.filter { $0.pid == pid && $0.layer == 0 }.map { window in
+                let hides = WindowVisibility.hidesIsland(window: window.bounds, display: display, notch: screen.safeAreaInsets.top,
+                                                         isFullScreen: window.isFullScreen, dockShown: scan.dockFrames.contains { $0.intersects(display) })
+                return "window \(window.bounds) fullScreen \(window.isFullScreen.map(String.init) ?? "unknown") hidesIsland \(hides)"
+            }
             if let range = screen.notchRange {
                 lines.append("notch \(Int(range.lowerBound))...\(Int(range.upperBound))")
                 lines.append("room \(MenuBarRoom.free(notchMinX: range.lowerBound, notchMaxX: range.upperBound, items: items))")

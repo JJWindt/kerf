@@ -84,7 +84,11 @@ enum CommandLineTool {
         let input = FileHandle.standardInput.readDataToEndOfFile()
         guard var payload = JSONValue.parse(input) else { return 0 }
         record(agent: name, event: event, payload: payload)
-        if agent == .copilot { payload = CopilotPayload.normalized(payload, event: event) }
+        if agent == .copilot {
+            payload = CopilotPayload.normalized(payload, event: event)
+            // Existing sessions may cache the old hook. No output hands policy back to Copilot.
+            guard payload["hook_event_name"]?.string != "PermissionRequest" else { return 0 }
+        }
         let host = ProcessTree.hostApp()
         let envelope = AgentEnvelope(agent: agent, host: host?.bundlePath, payload: payload, tty: ProcessTree.terminal())
         guard let line = try? JSONEncoder().encode(envelope) else { return 0 }
