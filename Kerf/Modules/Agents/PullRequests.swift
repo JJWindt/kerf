@@ -101,8 +101,8 @@ final class PullRequests {
                 pull.reviewRequested = true
                 return pull
             }
-            // Yours merged in the last day stay in the list that long.
-            let merged = try await Self.search(login: currentLogin, reviews: false, mergedSince: .now.addingTimeInterval(-86_400))
+            // Yours merged in the last eight hours stay in the list that long.
+            let merged = try await Self.search(login: currentLogin, reviews: false, mergedSince: .now.addingTimeInterval(-8 * 3_600))
             let fetched = authored + reviews.filter { review in !authored.contains { $0.id == review.id } } + merged
             failure = nil
             observe(fetched)
