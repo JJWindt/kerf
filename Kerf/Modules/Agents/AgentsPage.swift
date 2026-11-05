@@ -72,6 +72,8 @@ struct Overview: View {
             }
             content
         }
+        // A merge needs nothing more than being seen.
+        .onAppear { PullRequests.shared.sawMerges() }
     }
 
     @ViewBuilder private var content: some View {
@@ -94,9 +96,7 @@ struct Overview: View {
                     ForEach(pulls) { pull in
                         Button { PullRequests.shared.open(pull.url) } label: {
                             HStack(spacing: ui(10)) {
-                                Image(systemName: "arrow.triangle.pull").font(.page(13, weight: .semibold))
-                                    .foregroundStyle(pull.isDraft == true ? .white.opacity(0.5) : Color(nsColor: .systemGreen))
-                                    .frame(width: ui(30))
+                                PullIcon(pull: pull).frame(width: ui(30))
                                 VStack(alignment: .leading, spacing: 0) {
                                     Text(verbatim: pull.title).font(.page(13, weight: .semibold)).lineLimit(1)
                                     PullDetails(pull: pull).font(.page(11))
@@ -106,7 +106,7 @@ struct Overview: View {
                                     Circle().fill(Color(nsColor: .systemOrange)).frame(width: ui(6), height: ui(6))
                                         .accessibilityLabel(Text("Needs your attention"))
                                 }
-                                if let date = pull.updatedAt {
+                                if let date = pull.mergedAt ?? pull.updatedAt {
                                     Text(date, format: .relative(presentation: .numeric, unitsStyle: .narrow))
                                         .font(.page(11)).foregroundStyle(.white.opacity(0.4))
                                 }
@@ -126,6 +126,22 @@ struct Overview: View {
 }
 
 /// "kerf #42 · Checks failed": only what asks for you, the rest stays quiet.
+/// Open in green, a draft in grey, merged in purple, as on GitHub.
+struct PullIcon: View {
+    let pull: GitHub.Item
+
+    var body: some View {
+        if pull.mergedAt != nil {
+            Image(systemName: "arrow.triangle.merge").font(.page(13, weight: .semibold))
+                .foregroundStyle(Color(nsColor: .systemPurple))
+                .accessibilityLabel(Text("Merged"))
+        } else {
+            Image(systemName: "arrow.triangle.pull").font(.page(13, weight: .semibold))
+                .foregroundStyle(pull.isDraft == true ? .white.opacity(0.5) : Color(nsColor: .systemGreen))
+        }
+    }
+}
+
 struct PullDetails: View {
     let pull: GitHub.Item
 
@@ -140,7 +156,9 @@ struct PullDetails: View {
     }
 
     private var status: Text? {
-        if pull.reviewRequested == true {
+        if pull.mergedAt != nil {
+            nil
+        } else if pull.reviewRequested == true {
             Text("Review requested").foregroundStyle(.white.opacity(0.5))
         } else if pull.checks == .failing {
             Text("Checks failed").foregroundStyle(Color(nsColor: .systemRed))

@@ -53,7 +53,7 @@ final class Hub {
         let waitingAgent: CompactPresentation? = waiting.first.map { .agent(agent: $0.agent, hostPath: $0.hostPath) }
         let pulls = PullRequests.shared
         let pullNotice: CompactPresentation? = pulls.attentionCount > 0
-            ? .pullNotice(count: pulls.attentionCount, failed: pulls.hasFailedChecks) : nil
+            ? .pullNotice(count: pulls.attentionCount, tone: pulls.tone) : nil
         let urgentNotice = notices.contains(where: \.needsInput) ? notice : nil
         let new = banner ?? waitingAgent ?? urgentNotice ?? pullNotice ?? notice
         if presentation != new { presentation = new }

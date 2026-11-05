@@ -18,8 +18,12 @@ final class PullRequests {
     @ObservationIgnored private var login: String?
     private let logger = Logger(subsystem: "nl.jjwindt.kerf", category: "PullRequests")
 
-    var attentionCount: Int { attention.unread.count }
-    var hasFailedChecks: Bool { attention.unread.values.contains(where: \.checksFailed) }
+    var attentionCount: Int { attention.unread.count + attention.unreadMerges.count }
+    /// The most pressing news, for the closed notch.
+    var tone: PullTone {
+        if attention.unread.values.contains(where: \.checksFailed) { return .failed }
+        return attention.unread.isEmpty ? .merged : .changes
+    }
 
     nonisolated static var executable: String? {
         let home = FileManager.default.homeDirectoryForCurrentUser.path
@@ -97,10 +101,11 @@ final class PullRequests {
                 pull.reviewRequested = true
                 return pull
             }
-            let fetched = authored + reviews.filter { review in !authored.contains { $0.id == review.id } }
+            // Yours merged in the last day stay in the list that long.
+            let merged = try await Self.search(login: currentLogin, reviews: false, mergedSince: .now.addingTimeInterval(-86_400))
+            let fetched = authored + reviews.filter { review in !authored.contains { $0.id == review.id } } + merged
             failure = nil
-            // Alerts are for your own PRs: a review request shows in the list, it doesn't call.
-            attention.update(authored)
+            observe(fetched)
             saveAttention()
             pulls = fetched
             prioritize()
@@ -113,12 +118,12 @@ final class PullRequests {
     }
 
     /// Every page of one search.
-    private static func search(login: String, reviews: Bool) async throws -> [GitHub.Item] {
+    private static func search(login: String, reviews: Bool, mergedSince: Date? = nil) async throws -> [GitHub.Item] {
         var fetched: [GitHub.Item] = []
         var cursor: String?
         var visited: Set<String> = []
         repeat {
-            let data = try await gh(["api", "graphql", "-f", "query=\(GitHub.searchQuery(login: login, cursor: cursor, reviews: reviews))"])
+            let data = try await gh(["api", "graphql", "-f", "query=\(GitHub.searchQuery(login: login, cursor: cursor, reviews: reviews, mergedSince: mergedSince))"])
             guard let page = GitHub.page(fromSearch: data) else { throw FetchError.invalidResponse }
             fetched += page.pulls
             cursor = page.nextCursor
@@ -133,6 +138,22 @@ final class PullRequests {
 
     func needsAttention(_ pull: GitHub.Item) -> Bool { attention.unread[pull.id] != nil }
 
+    /// Alerts for your open PRs, news for your merged ones; a review request shows in the list,
+    /// it doesn't call.
+    private func observe(_ pulls: [GitHub.Item]) {
+        let own = pulls.filter { $0.reviewRequested != true }
+        attention.update(own.filter { $0.mergedAt == nil })
+        attention.updateMerged(own.filter { $0.mergedAt != nil })
+    }
+
+    /// The list was on screen: merges need nothing more.
+    func sawMerges() {
+        guard !attention.unreadMerges.isEmpty else { return }
+        attention.sawMerges()
+        saveAttention()
+        Hub.shared.refresh()
+    }
+
     private var attentionKey: String { "agents.pullAttention.\(login ?? "")" }
 
     private func saveAttention() {
@@ -146,8 +167,8 @@ final class PullRequests {
     /// Lab only; no gh calls or saved alert history.
     func preview(pulls: [GitHub.Item], changed: [GitHub.Item]? = nil) {
         attention = GitHub.Attention()
-        attention.update(pulls.filter { $0.reviewRequested != true })
-        if let changed { attention.update(changed.filter { $0.reviewRequested != true }) }
+        observe(pulls)
+        if let changed { observe(changed) }
         self.pulls = changed ?? pulls
         prioritize()
         loadedAt = .now
