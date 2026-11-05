@@ -5,6 +5,7 @@ import SwiftUI
 /// Checks the island without real data or permissions.
 ///
 ///     Kerf --lab motion <dir>         the iPhone recording's script, every frame saved
+///     Kerf --lab promo <dir>          the promo video's script, every frame saved (scripts/promo)
 ///     Kerf --lab shot <scene> <file>  one settled frame of a scene (see `scenes`)
 ///     Kerf --lab menus <pid> <file>   an app's menu titles and the room they leave
 ///     Kerf --lab focus                whether the island keeps the keyboard as it should
@@ -12,6 +13,7 @@ import SwiftUI
 struct Lab {
     enum Job {
         case motion(URL)
+        case promo(URL)
         case shot(String, URL)
         /// Opens with the keyboard, switches to another app, closes: logs whether the island stays.
         case focus
@@ -35,6 +37,7 @@ struct Lab {
         guard arguments.count > index + 2 else { return nil }
         switch arguments[index + 1] {
         case "motion": job = .motion(URL(fileURLWithPath: arguments[index + 2]))
+        case "promo": job = .promo(URL(fileURLWithPath: arguments[index + 2]))
         case "shot" where arguments.count > index + 3: job = .shot(arguments[index + 2], URL(fileURLWithPath: arguments[index + 3]))
         case "menus" where arguments.count > index + 3:
             job = .menus(pid: pid_t(arguments[index + 2]) ?? 0, file: URL(fileURLWithPath: arguments[index + 3]))
@@ -243,6 +246,7 @@ struct Lab {
         controller.show()
         switch job {
         case .motion(let directory): motion(controller, directory)
+        case .promo(let directory): promo(controller, directory)
         case .shot(let scene, let file): shot(controller, scene, file)
         case .focus: focus(controller)
         case .workflows: checkWorkflows(controller)
