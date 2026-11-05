@@ -143,10 +143,10 @@ final class GitHubModule {
             attention = UserDefaults.standard.data(forKey: attentionKey)
                 .flatMap { try? JSONDecoder().decode(GitHub.Attention.self, from: $0) } ?? GitHub.Attention()
         }
-        // Yours merged in the last day stay in the list that long.
+        // Yours merged in the last eight hours stay in the list that long.
         guard let authored = await Self.searchAll(login: current, reviews: false),
               let reviews = await Self.searchAll(login: current, reviews: true),
-              let merged = await Self.searchAll(login: current, reviews: false, mergedSince: .now.addingTimeInterval(-86_400)) else { return }
+              let merged = await Self.searchAll(login: current, reviews: false, mergedSince: .now.addingTimeInterval(-8 * 3_600)) else { return }
         let requested = reviews.filter { review in !authored.contains { $0.id == review.id } }.map { pull in
             var pull = pull
             pull.reviewRequested = true
