@@ -21,7 +21,7 @@ enum CommandLineTool {
 
     /// Runs a subcommand and returns its exit status, or nil to start the app.
     static func run(_ arguments: [String]) -> Int32? {
-        // Started as `kerf` (Homebrew's link, the hooks' bin/kerf) it is only ever the command,
+        // Started as `kerf` (the hooks' bin/kerf, or a link of your own) it is only ever the command,
         // never a second app.
         let asCommand = arguments.first.map { URL(fileURLWithPath: $0).lastPathComponent == "kerf" } ?? false
         guard arguments.count > 1 else {
@@ -62,7 +62,7 @@ enum CommandLineTool {
             print(String(decoding: reply, as: UTF8.self))
             return 0
         case "version", "--version":
-            // Through a symlink (Homebrew's `kerf`, the hooks' bin/kerf) Bundle.main is the link's folder.
+            // Through a symlink (the hooks' bin/kerf) Bundle.main is the link's folder.
             let app = Bundle.main.executableURL.map { $0.resolvingSymlinksInPath().deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent() }
             let bundle = app.flatMap(Bundle.init(url:)) ?? Bundle.main
             print(bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "?")

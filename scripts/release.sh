@@ -1,9 +1,9 @@
 #!/bin/bash
-# Builds a Kerf release for Homebrew: archives, signs with Developer ID, has Apple notarize it
+# Builds a Kerf release: archives, signs with Developer ID, has Apple notarize it
 # (through the account in Xcode), staples the ticket and zips the app.
 #
 #   scripts/release.sh             build/release/Kerf-<version>.zip and its sha256
-#   scripts/release.sh --publish   also the GitHub release and the cask in paultje1900/homebrew-tap
+#   scripts/release.sh --publish   also the GitHub release
 #
 # The version is MARKETING_VERSION in the project; raise it first.
 set -euo pipefail
@@ -42,11 +42,5 @@ echo "sha256 $SHA"
 
 echo "Publishing v$VERSION"
 gh release create "v$VERSION" "$ZIP" --repo paultje1900/kerf --title "Kerf $VERSION" \
-    --notes "Install or update: \`brew install --cask paultje1900/tap/kerf\` or \`brew upgrade --cask kerf\`."
-TAP=$(mktemp -d)
-gh repo clone paultje1900/homebrew-tap "$TAP" -- --quiet
-sed -i '' -e "s/^  version \".*\"/  version \"$VERSION\"/" -e "s/^  sha256 \".*\"/  sha256 \"$SHA\"/" "$TAP/Casks/kerf.rb"
-git -C "$TAP" commit --quiet -am "kerf $VERSION"
-git -C "$TAP" push --quiet
-rm -rf "$TAP"
-echo "Done: brew upgrade --cask kerf"
+    --notes "Unzip \`Kerf-$VERSION.zip\` and move Kerf to Applications."
+echo "Done: v$VERSION is on GitHub"

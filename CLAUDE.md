@@ -1,6 +1,6 @@
 # Kerf
 
-A Dynamic Island for the MacBook notch, for macOS 26. Open source, installed through Homebrew (`brew install --cask paultje1900/tap/kerf`).
+A Dynamic Island for the MacBook notch, for macOS 26. Open source, built and installed with `scripts/install.sh`.
 
 ## Read first
 

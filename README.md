@@ -22,13 +22,17 @@ Everything else is off until you switch it on in **Settings → Features**. What
 
 ## Install
 
+Build it with Xcode:
+
 ```bash
-brew install --cask paultje1900/tap/kerf
+git clone https://github.com/paultje1900/kerf.git
+cd kerf
+scripts/install.sh DEVELOPMENT_TEAM=<your team ID>
 ```
 
-Needs macOS 26 (Tahoe). Kerf is signed and notarized by Apple. It opens at login and lives in the notch; on a display without a notch it floats at the top.
+Needs macOS 26 (Tahoe) and Xcode 27. The script makes a Release build, signed with your own team (a free Apple ID works), puts it in /Applications and starts it. Kerf opens at login and lives in the notch; on a display without a notch it floats at the top.
 
-Update with `brew upgrade --cask kerf`. To remove it, first press Disconnect in Settings → Agents, then `brew uninstall --cask kerf` (add `--zap` to remove its settings too).
+Update with `git pull` and the same `scripts/install.sh`. To remove it, first press Disconnect in Settings → Agents, then move Kerf from Applications to the Trash.
 
 ## First steps
 
@@ -54,7 +58,7 @@ scripts/install.sh   # Release build into /Applications
 
 macOS 26, Xcode 27, Swift 6. `Kerf --lab shot <scene> <file.png>` saves a frame of any state without real data (scenes in `Kerf/Island/Lab.swift`).
 
-Releases: raise `MARKETING_VERSION`, then `scripts/release.sh --publish` archives, signs with Developer ID, notarizes, publishes the GitHub release and updates the cask in [paultje1900/homebrew-tap](https://github.com/paultje1900/homebrew-tap).
+Releases: raise `MARKETING_VERSION`, then `scripts/release.sh --publish` archives, signs with Developer ID, notarizes and publishes the GitHub release.
 
 ## License
 
