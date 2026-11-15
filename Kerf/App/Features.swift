@@ -75,7 +75,7 @@ enum Feature: String, CaseIterable, Identifiable {
     var summary: LocalizedStringResource {
         switch self {
         case .agents: "Claude Code, Codex and Copilot ask for permission and answers in the notch. Connect them under Agents."
-        case .usage: "Three rings beside the notch, always there: how much is used of your 5-hour session, your week and your week of Fable. Read from your own Claude Code."
+        case .usage: "Two rings beside the notch, always there: how much is used of your 5-hour session, in orange on the left, and of your week, in red on the right. Read from your own Claude Code."
         case .github: "Pull requests, checks, issues and branches through the GitHub CLI (gh). Your pull requests also show beside the threads."
         case .ask: "⌥ Space asks Claude through your own Claude Code, ⌥⇧ Space asks about the selected text."
         case .music: "Whatever plays, with a live waveform in the notch."

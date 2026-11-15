@@ -113,17 +113,12 @@ struct Lab {
             Self.scenes["today"]?(controller)
             controller.open(page: .home)
         },
-        // Claude's usage beside the notch: 5 hours, week, Fable.
+        // Claude's usage beside the notch: 5 hours on the left, the week on the right.
         "usage": { _ in previewUsage() },
-        "usage-left": { _ in previewUsage(side: .left) },
         "usage-music": { _ in previewUsage(); previewMusic() },
-        "usage-left-music": { _ in previewUsage(side: .left); previewMusic() },
         "usage-dot": { controller in previewUsage(); controller.island.show(nil, waiting: 2, usage: Hub.shared.usage) },
-        // Close to the limits, and a plan without a model limit.
-        "usage-high": { _ in
-            ClaudeUsageModule.shared.preview(ClaudeUsage(session: .init(percent: 100), week: .init(percent: 91), model: .init(percent: 76), modelName: "Fable"))
-        },
-        "usage-two": { _ in ClaudeUsageModule.shared.preview(ClaudeUsage(session: .init(percent: 4), week: .init(percent: 37))) },
+        // Close to the limits.
+        "usage-high": { _ in ClaudeUsageModule.shared.preview(ClaudeUsage(session: .init(percent: 100), week: .init(percent: 91))) },
         "usage-open": { previewUsage(); $0.open() },
         // Rings, open, closed again, music beside them, gone: to watch that nothing in the island moves.
         "usage-cycle": { controller in
@@ -412,9 +407,8 @@ struct Lab {
         AgentCenter.shared.preview(request, sessions: sampleSessions)
     }
 
-    static func previewUsage(side: UsageSide = .right) {
-        ClaudeUsageModule.shared.preview(ClaudeUsage(session: .init(percent: 28), week: .init(percent: 60), model: .init(percent: 79), modelName: "Fable"),
-                                         side: side)
+    static func previewUsage() {
+        ClaudeUsageModule.shared.preview(ClaudeUsage(session: .init(percent: 28), week: .init(percent: 60)))
     }
 
     static func previewMusic() {

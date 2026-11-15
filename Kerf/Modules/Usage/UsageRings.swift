@@ -1,44 +1,39 @@
 import KerfKit
 import SwiftUI
 
-enum UsageSide: String, CaseIterable, Identifiable {
-    case left, right
-
-    var id: Self { self }
-
-    var title: LocalizedStringResource {
-        switch self {
-        case .left: "Left of the notch"
-        case .right: "Right of the notch"
-        }
-    }
-}
-
-/// The usage rings beside the notch: on which side, and how many, which gives their width.
+/// The usage rings beside the notch: the 5 hours left of it, the week right of it.
 struct UsageStrip: Equatable {
-    var side: UsageSide
-    var count: Int
+    var left: Bool
+    var right: Bool
 
     static let ring: CGFloat = 20
-    static let gap: CGFloat = 6
-    /// The rings and 8 pt on each end.
-    var width: CGFloat { CGFloat(count) * Self.ring + CGFloat(max(count - 1, 0)) * Self.gap + 16 }
+    /// A ring and 8 pt on each end.
+    static let width: CGFloat = ring + 16
+    var leading: CGFloat { left ? Self.width : 0 }
+    var trailing: CGFloat { right ? Self.width : 0 }
 }
 
-/// 5 hours, week, model: always in that order, from orange to yellow, with how much of it is used.
-/// The yellow one ends up beside the right wing, where the orange dot waits.
+/// 5 hours in orange left of the notch, the week in red right of it, with how much of each is used.
+/// A ring without room beside the app's menus waits for it.
 struct UsageRings: View {
-    /// Halfway between the system's orange and yellow.
-    private static let amber = Color(.sRGB, red: 1, green: 0.73, blue: 0.04)
+    let centerWidth: CGFloat
+    let fitting: UsageStrip?
 
     var body: some View {
         let usage = ClaudeUsageModule.shared.usage
-        HStack(spacing: UsageStrip.gap) {
-            if let session = usage?.session { UsageRing(limit: session, tint: Color(nsColor: .systemOrange), name: Text("5-hour session")) }
-            if let week = usage?.week { UsageRing(limit: week, tint: Self.amber, name: Text("Week")) }
-            if let model = usage?.model {
-                UsageRing(limit: model, tint: Color(nsColor: .systemYellow),
-                          name: usage?.modelName.map { Text("Week, \($0)") } ?? Text("Week, one model"))
+        HStack(spacing: 0) {
+            ring(usage?.session, tint: .systemOrange, name: Text("5-hour session"), shown: fitting?.left == true)
+            Color.clear.frame(width: centerWidth)
+            ring(usage?.week, tint: .systemRed, name: Text("Week"), shown: fitting?.right == true)
+        }
+        .animation(.smooth(duration: 0.2), value: fitting)
+    }
+
+    private func ring(_ limit: ClaudeUsage.Limit?, tint: NSColor, name: Text, shown: Bool) -> some View {
+        Color.clear.frame(width: UsageStrip.width).overlay {
+            if let limit {
+                UsageRing(limit: limit, tint: Color(nsColor: tint), name: name)
+                    .modifier(IslandContentEffect(hidden: shown ? 0 : 1, blur: 8))
             }
         }
     }

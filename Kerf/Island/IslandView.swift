@@ -78,10 +78,9 @@ struct IslandBody: View {
             )
             .modifier(IslandContentEffect(hidden: 1 - island.compactShown, blur: 8))
             // Their own layer: the rings stay while what's beside them comes and goes.
-            if let usage = island.usage {
-                UsageRings()
-                    .frame(width: usage.width, height: style.bandHeight)
-                    .offset(x: (usage.side == .right ? 1 : -1) * (style.centerWidth + usage.width) / 2)
+            if island.usage != nil {
+                UsageRings(centerWidth: style.centerWidth, fitting: island.fittingUsage)
+                    .frame(height: style.bandHeight)
                     .modifier(IslandContentEffect(hidden: 1 - island.usageShown, blur: 8))
                     .allowsHitTesting(false)
             }

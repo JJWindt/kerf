@@ -2409,46 +2409,6 @@
         }
       }
     },
-    "Three rings beside the notch, always there: how much is used of your 5-hour session, your week and your week of Fable. Read from your own Claude Code." : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Drie ringen naast de notch, altijd in beeld: hoeveel je hebt gebruikt van je sessie van 5 uur, je week en je week met Fable. Gelezen uit je eigen Claude Code."
-          }
-        }
-      }
-    },
-    "Side" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kant"
-          }
-        }
-      }
-    },
-    "Left of the notch" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Links van de notch"
-          }
-        }
-      }
-    },
-    "Right of the notch" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Rechts van de notch"
-          }
-        }
-      }
-    },
     "Claude Code isn't installed. Kerf reads your usage from it." : {
       "localizations" : {
         "nl" : {
@@ -2489,32 +2449,22 @@
         }
       }
     },
-    "Week, %@" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Week, %@"
-          }
-        }
-      }
-    },
-    "Week, one model" : {
-      "localizations" : {
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Week, één model"
-          }
-        }
-      }
-    },
     "%lld percent used" : {
       "localizations" : {
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld procent gebruikt"
+          }
+        }
+      }
+    },
+    "Two rings beside the notch, always there: how much is used of your 5-hour session, in orange on the left, and of your week, in red on the right. Read from your own Claude Code." : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Twee ringen naast de notch, altijd in beeld: hoeveel je hebt gebruikt van je sessie van 5 uur, oranje links, en van je week, rood rechts. Gelezen uit je eigen Claude Code."
           }
         }
       }

@@ -53,10 +53,12 @@ final class Island {
     /// Free room on each side of the notch, from the menu bar. Open until known and on other displays.
     private(set) var menuRoom = MenuBarRoom.Sides.open
 
-    /// The rings, when they fit beside the app's menus on their side. Otherwise they wait for room.
+    /// The rings that fit beside the app's menus on their side. The others wait for room.
     var fittingUsage: UsageStrip? {
-        guard let usage, MenuBarRoom.fits(wings: usage.width, in: usage.side == .left ? menuRoom.left : menuRoom.right) else { return nil }
-        return usage
+        guard let usage else { return nil }
+        let fitting = UsageStrip(left: usage.left && MenuBarRoom.fits(wings: UsageStrip.width, in: menuRoom.left),
+                                 right: usage.right && MenuBarRoom.fits(wings: UsageStrip.width, in: menuRoom.right))
+        return fitting.left || fitting.right ? fitting : nil
     }
 
     /// What shows beside the notch: the presentation when it fits next to the app's menus, past
@@ -65,8 +67,8 @@ final class Island {
         guard let presentation else { return nil }
         if presentation.showsOverMenus { return presentation }
         let rings = fittingUsage
-        let fits = MenuBarRoom.fits(wings: IslandGeometry.wing + (rings?.side == .left ? rings?.width ?? 0 : 0), in: menuRoom.left)
-            && MenuBarRoom.fits(wings: IslandGeometry.wing + (rings?.side == .right ? rings?.width ?? 0 : 0), in: menuRoom.right)
+        let fits = MenuBarRoom.fits(wings: IslandGeometry.wing + (rings?.leading ?? 0), in: menuRoom.left)
+            && MenuBarRoom.fits(wings: IslandGeometry.wing + (rings?.trailing ?? 0), in: menuRoom.right)
         return fits ? presentation : nil
     }
 
@@ -81,12 +83,11 @@ final class Island {
         settle()
     }
 
-    /// The compact island: the rings next to the notch on their side, a wing past them on both.
+    /// The compact island: the rings next to the notch, a wing past them on both sides.
     private var compact: (size: CGSize, shift: CGFloat) {
         let wing = showsWings ? IslandGeometry.wing : 0
         let rings = fittingUsage
-        return geometry.compact(leading: wing + (rings?.side == .left ? rings?.width ?? 0 : 0),
-                                trailing: wing + (rings?.side == .right ? rings?.width ?? 0 : 0))
+        return geometry.compact(leading: wing + (rings?.leading ?? 0), trailing: wing + (rings?.trailing ?? 0))
     }
 
     func shift(of mode: IslandMode) -> CGFloat {

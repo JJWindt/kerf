@@ -164,23 +164,13 @@ struct FeatureToggle: View {
     }
 }
 
-/// Under the Claude usage switch: the side of the notch, and why no rings show when they don't.
+/// Under the Claude usage switch: why no rings show when they don't.
 struct UsageSettings: View {
     var body: some View {
-        let module = ClaudeUsageModule.shared
-        LabeledContent {
-            Picker("Side", selection: Binding(get: { module.side }, set: { module.setSide($0) })) {
-                ForEach(UsageSide.allCases) { Text($0.title).tag($0) }
-            }
-            .labelsHidden()
-            .fixedSize()
-        } label: {
-            Text("Side")
-            switch module.status {
-            case .notInstalled: Text("Claude Code isn't installed. Kerf reads your usage from it.")
-            case .unavailable: Text("Claude Code has no plan limits to show. Sign it in with your Claude plan, or update it.")
-            case .asking, .known: EmptyView()
-            }
+        switch ClaudeUsageModule.shared.status {
+        case .notInstalled: Text("Claude Code isn't installed. Kerf reads your usage from it.").foregroundStyle(.secondary)
+        case .unavailable: Text("Claude Code has no plan limits to show. Sign it in with your Claude plan, or update it.").foregroundStyle(.secondary)
+        case .asking, .known: EmptyView()
         }
     }
 }
