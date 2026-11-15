@@ -9,8 +9,9 @@ enum Motion {
     static let appear = Spring(response: 0.49, dampingRatio: 0.84)
     /// Compact → open, both axes together: response 0.50 s, damping 0.82 (1.2 % overshoot).
     static let expand = Spring(response: 0.50, dampingRatio: 0.82)
-    /// Open → compact, width: shoots 18 % past the compact width into a small pill and springs back.
-    static let collapseWidth = Spring(response: 0.56, dampingRatio: 0.48)
+    /// Open → compact, width: 2 % past the compact width at most. The iPhone's 18 % dip cut up to
+    /// 11 pt into the icons and rings beside the notch while they came in.
+    static let collapseWidth = Spring(response: 0.5, dampingRatio: 0.78)
     /// Open → compact, height: overdamped, so it never dips into the notch.
     static let collapseHeight = Spring(response: 0.28, dampingRatio: 1.12)
     /// Compact → idle, critically damped.
