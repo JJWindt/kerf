@@ -2459,12 +2459,22 @@
         }
       }
     },
-    "Two rings beside the notch, always there: how much is used of your 5-hour session, in orange on the left, and of your week, in red on the right. Read from your own Claude Code." : {
+    "Two rings when you open the island: how much is used of your 5-hour session, in orange on the left, and of your week, in red on the right. Read from your own Claude Code." : {
       "localizations" : {
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Twee ringen naast de notch, altijd in beeld: hoeveel je hebt gebruikt van je sessie van 5 uur, oranje links, en van je week, rood rechts. Gelezen uit je eigen Claude Code."
+            "value" : "Twee ringen als je het eiland opent: hoeveel je hebt gebruikt van je sessie van 5 uur, oranje links, en van je week, rood rechts. Gelezen uit je eigen Claude Code."
+          }
+        }
+      }
+    },
+    "Three icons fit on each side of the notch, beside the usage rings. The rest goes under …" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Er passen drie iconen aan elke kant van de notch, naast de verbruiksringen. De rest komt onder …"
           }
         }
       }

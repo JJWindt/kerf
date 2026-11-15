@@ -113,25 +113,18 @@ struct Lab {
             Self.scenes["today"]?(controller)
             controller.open(page: .home)
         },
-        // Claude's usage beside the notch: 5 hours on the left, the week on the right.
-        "usage": { _ in previewUsage() },
-        "usage-music": { _ in previewUsage(); previewMusic() },
-        "usage-dot": { controller in previewUsage(); controller.island.show(nil, waiting: 2, usage: Hub.shared.usage) },
+        // Claude's usage in the open island: 5 hours on the left, the week on the right.
+        "usage": { previewUsage(); $0.open() },
         // Close to the limits.
-        "usage-high": { _ in ClaudeUsageModule.shared.preview(ClaudeUsage(session: .init(percent: 100), week: .init(percent: 91))) },
-        "usage-open": { previewUsage(); $0.open() },
-        // Rings, open, closed again, music beside them, gone: to watch that nothing in the island moves.
-        "usage-cycle": { controller in
+        "usage-high": { ClaudeUsageModule.shared.preview(ClaudeUsage(session: .init(percent: 100), week: .init(percent: 91))); $0.open() },
+        // A full bar: three icons beside each ring, the rest under "…".
+        "usage-full": { controller in
             previewUsage()
+            controller.open()
+            // After the hub has set its own pages.
             Task {
-                try? await Task.sleep(for: .seconds(1.5))
-                controller.open()
-                try? await Task.sleep(for: .seconds(1.5))
-                controller.close()
-                try? await Task.sleep(for: .seconds(1.5))
-                previewMusic()
-                try? await Task.sleep(for: .seconds(1.5))
-                NowPlayingModule.shared.preview(nil, artwork: nil, tint: .pink)
+                try? await Task.sleep(for: .seconds(0.8))
+                controller.island.pages = [.agents, .music, .ask, .today, .github, .more]
             }
         },
         "settings-usage": { _ in

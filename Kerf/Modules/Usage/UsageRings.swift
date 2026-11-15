@@ -1,40 +1,21 @@
 import KerfKit
 import SwiftUI
 
-/// The usage rings beside the notch: the 5 hours left of it, the week right of it.
-struct UsageStrip: Equatable {
-    var left: Bool
-    var right: Bool
-
-    static let ring: CGFloat = 20
-    /// A ring and 8 pt on each end.
-    static let width: CGFloat = ring + 16
-    var leading: CGFloat { left ? Self.width : 0 }
-    var trailing: CGFloat { right ? Self.width : 0 }
-}
-
-/// 5 hours in orange left of the notch, the week in red right of it, with how much of each is used.
-/// A ring without room beside the app's menus waits for it.
-struct UsageRings: View {
-    let centerWidth: CGFloat
-    let fitting: UsageStrip?
+/// A usage ring at one end of the open island's band: the 5 hours in orange on the left, the week
+/// in red on the right. Nothing while usage is off or not known.
+struct BandUsageRing: View {
+    let edge: HorizontalEdge
+    /// From the island's edge, and the air between the ring and the tabs: with three tabs beside
+    /// it, 12 + 20 + 4 + 61 pt fills the 97 pt beside the notch.
+    private static let inset: CGFloat = 12
+    static let gap: CGFloat = 4
 
     var body: some View {
         let usage = ClaudeUsageModule.shared.usage
-        HStack(spacing: 0) {
-            ring(usage?.session, tint: .systemOrange, name: Text("5-hour session"), shown: fitting?.left == true)
-            Color.clear.frame(width: centerWidth)
-            ring(usage?.week, tint: .systemRed, name: Text("Week"), shown: fitting?.right == true)
-        }
-        .animation(.smooth(duration: 0.2), value: fitting)
-    }
-
-    private func ring(_ limit: ClaudeUsage.Limit?, tint: NSColor, name: Text, shown: Bool) -> some View {
-        Color.clear.frame(width: UsageStrip.width).overlay {
-            if let limit {
-                UsageRing(limit: limit, tint: Color(nsColor: tint), name: name)
-                    .modifier(IslandContentEffect(hidden: shown ? 0 : 1, blur: 8))
-            }
+        if let limit = edge == .leading ? usage?.session : usage?.week {
+            UsageRing(limit: limit, tint: Color(nsColor: edge == .leading ? .systemOrange : .systemRed),
+                      name: edge == .leading ? Text("5-hour session") : Text("Week"))
+                .padding(edge == .leading ? .leading : .trailing, Self.inset)
         }
     }
 }
@@ -44,6 +25,7 @@ struct UsageRing: View {
     let limit: ClaudeUsage.Limit
     let tint: Color
     let name: Text
+    static let size: CGFloat = 20
     private static let line: CGFloat = 2.2
 
     var body: some View {
@@ -63,7 +45,7 @@ struct UsageRing: View {
         }
         // The stroke is drawn around the path: half of it would fall outside the frame.
         .padding(Self.line / 2)
-        .frame(width: UsageStrip.ring, height: UsageStrip.ring)
+        .frame(width: Self.size, height: Self.size)
         .animation(.smooth(duration: 0.4), value: percent)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(name)

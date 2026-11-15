@@ -11,7 +11,7 @@ The notch for your coding agents: a Dynamic Island for the MacBook that looks an
 
 Everything else is off until you switch it on in **Settings → Features**. What's off doesn't run and asks for no permission.
 
-- **Claude usage**: two rings beside the notch, always there: how much is used of your 5-hour session, in orange on the left, and of your week, in red on the right. Read from your own Claude Code, without spending anything of the plan.
+- **Claude usage**: two rings when you open the island: how much is used of your 5-hour session, in orange on the left, and of your week, in red on the right. Read from your own Claude Code, without spending anything of the plan.
 - **GitHub**: pull requests, CI, issues and a repo's files, through `gh`. Your PRs and review requests also show under the threads, the ones a thread works on first; a quiet alert in the notch when checks newly fail or a reviewer asks for changes.
 - **Ask Claude**: ⌥ Space. A question goes to Claude through your own Claude Code, a few words to Google. ⌥⇧ Space asks about the selected text. Drop files or take a screenshot to ask about them; speak instead of typing. Without it, ⌥ Space opens the island.
 - **Now Playing** and **Mixer**: whatever plays (Music, Spotify, podcasts) in Apple Music's island card, and a volume per app. **Volume and brightness** in the notch; scroll over it for volume.

@@ -2,8 +2,8 @@ import AppKit
 import KerfKit
 import SwiftUI
 
-/// How much of your Claude plan is used, for the rings beside the notch: the 5-hour session and the
-/// week. Asked from your own Claude Code the way its /usage asks:
+/// How much of your Claude plan is used, for the rings in the open island: the 5-hour session and
+/// the week. Asked from your own Claude Code the way its /usage asks:
 /// no prompt goes out and it costs nothing of the plan.
 @Observable
 final class ClaudeUsageModule {
@@ -29,11 +29,6 @@ final class ClaudeUsageModule {
     private static let interval: TimeInterval = 600
     private static let shortest: TimeInterval = 60
 
-    /// The rings as the island shows them; nil while switched off or nothing is known.
-    var strip: UsageStrip? {
-        guard Feature.usage.isOn, let usage, usage.session != nil || usage.week != nil else { return nil }
-        return UsageStrip(left: usage.session != nil, right: usage.week != nil)
-    }
 
     func start() {
         guard !isRunning else { return }
@@ -107,7 +102,6 @@ final class ClaudeUsageModule {
                 // No answer this time (offline, or Claude Code was busy updating): keep what's known.
                 break
             }
-            Hub.shared.refresh()
         }
     }
 
@@ -146,6 +140,5 @@ final class ClaudeUsageModule {
     func preview(_ usage: ClaudeUsage?) {
         self.usage = usage
         status = usage == nil ? .unavailable : .known
-        Hub.shared.refresh()
     }
 }

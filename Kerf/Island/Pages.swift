@@ -48,7 +48,9 @@ enum IslandPage: String, CaseIterable, Identifiable {
         var bar = pages.filter { $0.placement == .bar }
         var more = pages.filter { $0.placement == .more }
         if offloadActive { bar.insert(.offload, at: min(bar.count, 4)) }
-        let room = more.isEmpty && bar.count <= 8 ? 8 : 7
+        // Four icons on each side of the notch, three beside the usage rings.
+        let full = Feature.usage.isOn ? 6 : 8
+        let room = more.isEmpty && bar.count <= full ? full : full - 1
         if bar.count > room {
             more = Array(bar[room...]).filter { $0 != .offload } + more
             bar = Array(bar.prefix(room))
@@ -146,15 +148,21 @@ struct TabBand: View {
     var body: some View {
         let pages = island.pages
         let half = (pages.count + 1) / 2
+        let showsTabs = pages.count > 1
         HStack(spacing: 0) {
-            tabs(Array(pages.prefix(half))).frame(maxWidth: .infinity)
+            HStack(spacing: BandUsageRing.gap) {
+                BandUsageRing(edge: .leading)
+                tabs(Array(pages.prefix(half))).frame(maxWidth: .infinity).opacity(showsTabs ? 1 : 0)
+            }
             // Clicking the notch closes the island again.
             Color.clear.frame(width: island.geometry.style.centerWidth)
                 .contentShape(Rectangle())
                 .onTapGesture { island.onClose?() }
-            tabs(Array(pages.dropFirst(half))).frame(maxWidth: .infinity)
+            HStack(spacing: BandUsageRing.gap) {
+                tabs(Array(pages.dropFirst(half))).frame(maxWidth: .infinity).opacity(showsTabs ? 1 : 0)
+                BandUsageRing(edge: .trailing)
+            }
         }
-        .opacity(pages.count > 1 ? 1 : 0)
     }
 
     private func isSelected(_ page: IslandPage) -> Bool {
@@ -162,7 +170,8 @@ struct TabBand: View {
     }
 
     private func tabs(_ pages: [IslandPage]) -> some View {
-        // Four icons must fit beside the notch: 4 × 17 + 3 × 5 = 83 pt of 97.
+        // Four icons must fit beside the notch: 4 × 17 + 3 × 5 = 83 pt of 97. Beside a usage ring,
+        // three: 3 × 17 + 2 × 5 = 61 pt.
         HStack(spacing: 5) {
             ForEach(pages) { page in
                 Button {

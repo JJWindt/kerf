@@ -96,7 +96,7 @@ final class IslandController {
         if island.pages != hub.pages { island.pages = hub.pages }
         let available = hub.pages + hub.morePages
         if !available.contains(island.page), let start = hub.startPage { island.select(start) }
-        island.show(hub.presentation, waiting: hub.waitingCount, usage: hub.usage)
+        island.show(hub.presentation, waiting: hub.waitingCount)
         // The open page may need another height now.
         island.refit()
     }

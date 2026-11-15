@@ -73,17 +73,9 @@ struct IslandBody: View {
                 presentation: island.presentation,
                 centerWidth: style.centerWidth,
                 height: style.bandHeight,
-                waitingCount: island.waitingCount,
-                usage: island.fittingUsage
+                waitingCount: island.waitingCount
             )
             .modifier(IslandContentEffect(hidden: 1 - island.compactShown, blur: 8))
-            // Their own layer: the rings stay while what's beside them comes and goes.
-            if island.usage != nil {
-                UsageRings(centerWidth: style.centerWidth, fitting: island.fittingUsage)
-                    .frame(height: style.bandHeight)
-                    .modifier(IslandContentEffect(hidden: 1 - island.usageShown, blur: 8))
-                    .allowsHitTesting(false)
-            }
             if island.expandedMounted {
                 // Laid out at full size and uncovered by the growing shape: content never moves.
                 ExpandedView(island: island)

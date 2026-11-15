@@ -22,8 +22,6 @@ final class Island {
     private(set) var shift: CGFloat = 0
     /// 0 hidden, 1 shown.
     private(set) var compactShown = 0.0
-    /// The usage rings' own fade: they stay while what's beside them changes.
-    private(set) var usageShown = 0.0
     private(set) var expandedShown = 0.0
     /// The page's own fade, for switching pages while open.
     private(set) var pageShown = 1.0
@@ -31,8 +29,6 @@ final class Island {
     private(set) var expandedMounted = false
     private(set) var isHovered = false
     private(set) var presentation: CompactPresentation?
-    /// The usage rings, when they're switched on and known.
-    private(set) var usage: UsageStrip?
     /// Threads waiting on you, for the orange dot.
     private(set) var waitingCount = 0
     var showsAgentDot: Bool { waitingCount > 0 }
@@ -53,29 +49,20 @@ final class Island {
     /// Free room on each side of the notch, from the menu bar. Open until known and on other displays.
     private(set) var menuRoom = MenuBarRoom.Sides.open
 
-    /// The rings that fit beside the app's menus on their side. The others wait for room.
-    var fittingUsage: UsageStrip? {
-        guard let usage else { return nil }
-        let fitting = UsageStrip(left: usage.left && MenuBarRoom.fits(wings: UsageStrip.width, in: menuRoom.left),
-                                 right: usage.right && MenuBarRoom.fits(wings: UsageStrip.width, in: menuRoom.right))
-        return fitting.left || fitting.right ? fitting : nil
-    }
-
-    /// What shows beside the notch: the presentation when it fits next to the app's menus, past
-    /// the rings. The rest waits for room, or a hover.
+    /// What shows beside the notch: the presentation when it fits next to the app's menus. The
+    /// rest waits for room, or a hover.
     var fittingPresentation: CompactPresentation? {
         guard let presentation else { return nil }
         if presentation.showsOverMenus { return presentation }
-        let rings = fittingUsage
-        let fits = MenuBarRoom.fits(wings: IslandGeometry.wing + (rings?.leading ?? 0), in: menuRoom.left)
-            && MenuBarRoom.fits(wings: IslandGeometry.wing + (rings?.trailing ?? 0), in: menuRoom.right)
+        let fits = MenuBarRoom.fits(wings: IslandGeometry.wing, in: menuRoom.left)
+            && MenuBarRoom.fits(wings: IslandGeometry.wing, in: menuRoom.right)
         return fits ? presentation : nil
     }
 
     /// A presentation or the dot: a wing on each side of the notch.
     private var showsWings: Bool { fittingPresentation != nil || showsAgentDot }
 
-    var restingMode: IslandMode { showsWings || fittingUsage != nil ? .compact : .idle }
+    var restingMode: IslandMode { showsWings ? .compact : .idle }
 
     func setMenuRoom(_ room: MenuBarRoom.Sides) {
         guard room != menuRoom else { return }
@@ -83,11 +70,10 @@ final class Island {
         settle()
     }
 
-    /// The compact island: the rings next to the notch, a wing past them on both sides.
+    /// The compact island: a wing on both sides of the notch.
     private var compact: (size: CGSize, shift: CGFloat) {
         let wing = showsWings ? IslandGeometry.wing : 0
-        let rings = fittingUsage
-        return geometry.compact(leading: wing + (rings?.leading ?? 0), trailing: wing + (rings?.trailing ?? 0))
+        return geometry.compact(leading: wing, trailing: wing)
     }
 
     func shift(of mode: IslandMode) -> CGFloat {
@@ -125,10 +111,7 @@ final class Island {
         }
         withAnimation(springs.height) { height = size(of: next).height }
         withAnimation(Motion.fadeOut(from: previous)) {
-            if next != .compact {
-                compactShown = 0
-                usageShown = 0
-            }
+            if next != .compact { compactShown = 0 }
         }
         if next != .expanded {
             withAnimation(Motion.fadeOut(from: previous), completionCriteria: .removed) {
@@ -142,10 +125,7 @@ final class Island {
         let quick = if case .level = presentation { true } else { false }
         guard let fadeIn = quick && next == .compact ? .smooth(duration: 0.1) : Motion.fadeIn(to: next, from: previous) else { return }
         withAnimation(fadeIn) {
-            if next == .compact {
-                compactShown = 1
-                usageShown = fittingUsage == nil ? 0 : 1
-            }
+            if next == .compact { compactShown = 1 }
             if next == .expanded { expandedShown = 1 }
         }
     }
@@ -155,16 +135,9 @@ final class Island {
         guard mode != .expanded else { return }
         if mode == restingMode {
             resize(.spring(Motion.appear))
-            fadeUsage()
         } else {
             go(restingMode)
         }
-    }
-
-    /// The rings came, went, or found room while the island stayed compact.
-    private func fadeUsage() {
-        let shown: Double = mode == .compact && fittingUsage != nil ? 1 : 0
-        if usageShown != shown { withAnimation(.smooth(duration: 0.2)) { usageShown = shown } }
     }
 
     func setHovered(_ hovered: Bool) {
@@ -174,10 +147,9 @@ final class Island {
     }
 
     /// New compact content. Same kind updates in place; another kind fades out, swaps and fades in.
-    func show(_ new: CompactPresentation?, waiting: Int, usage newUsage: UsageStrip? = nil) {
+    func show(_ new: CompactPresentation?, waiting: Int) {
         let kindChanged = new?.kind != presentation?.kind
-        guard kindChanged || new != presentation || waiting != waitingCount || newUsage != usage else { return }
-        usage = newUsage
+        guard kindChanged || new != presentation || waiting != waitingCount else { return }
         // Something new for you: one more thread waiting, or one more thread with a notice.
         if waiting > waitingCount || !kindChanged && (new?.noticeCount ?? 0) > (presentation?.noticeCount ?? 0) { bump() }
         guard kindChanged, mode == .compact, compactShown > 0 else {
@@ -200,7 +172,6 @@ final class Island {
             } else {
                 resize(.spring(Motion.appear))
                 withAnimation(.smooth(duration: 0.2)) { compactShown = 1 }
-                fadeUsage()
             }
         }
     }

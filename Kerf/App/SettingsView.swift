@@ -184,7 +184,11 @@ struct PageSettings: View {
             } header: {
                 Text("Pages")
             } footer: {
-                Text("Four icons fit on each side of the notch. The rest goes under …")
+                if Feature.usage.isOn {
+                    Text("Three icons fit on each side of the notch, beside the usage rings. The rest goes under …")
+                } else {
+                    Text("Four icons fit on each side of the notch. The rest goes under …")
+                }
                 Text("Switch on more in Features. Overview needs Now Playing and Calendar.")
             }
         }
